@@ -1,11 +1,10 @@
-// src/pages/PRPage.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./PRPage.css";
 
 export default function PRPage() {
   const [items, setItems] = useState([]);
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState([{ item_id: "", quantity: 1, unit_price: 0, total: 0 }]); // 🔹 ตั้งค่าเริ่มต้นให้มี 1 แถว
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -21,6 +20,13 @@ export default function PRPage() {
     };
     fetchItems();
   }, []);
+
+  useEffect(() => {
+    const spacing = document.querySelector(".dynamic-spacing");
+    if (spacing) {
+      spacing.style.minHeight = `${30 + rows.length * 5}px`; // 🔹 ขยับ Total Amount ตามจำนวนแถว
+    }
+  }, [rows]);
 
   const addRow = () => {
     setRows([...rows, { item_id: "", quantity: 1, unit_price: 0, total: 0 }]);
@@ -47,8 +53,10 @@ export default function PRPage() {
   };
 
   const handleDeleteRow = (index) => {
-    const updatedRows = rows.filter((_, i) => i !== index);
-    setRows(updatedRows);
+    if (rows.length > 1) {
+      const updatedRows = rows.filter((_, i) => i !== index);
+      setRows(updatedRows);
+    }
   };
 
   const handleSubmit = async () => {
@@ -68,69 +76,76 @@ export default function PRPage() {
         }
       );
       alert("✅ สร้าง PR สำเร็จ!");
-      setRows([]);
+      setRows([{ item_id: "", quantity: 1, unit_price: 0, total: 0 }]); // 🔹 รีเซ็ตให้เหลือ 1 แถวหลังจากกดส่ง
     } catch (err) {
       console.error("❌ สร้าง PR ล้มเหลว", err);
       alert("❌ สร้าง PR ล้มเหลว");
     }
   };
 
-  return (
-    <div className="pr-container">
-      <h1 className="pr-title">สร้างใบขอซื้อ (Purchase Request - PR)</h1>
+  const totalAmount = rows.reduce((sum, row) => sum + row.total, 0);
 
-      <table className="pr-table">
-        <thead>
-          <tr>
-            <th>สินค้า</th>
-            <th>จำนวน</th>
-            <th>ราคาต่อหน่วย</th>
-            <th>รวม</th>
-            <th>ลบ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={index}>
-              <td>
-                <select
-                  value={row.item_id}
-                  onChange={(e) =>
-                    handleChange(index, "item_id", e.target.value)
-                  }
-                >
-                  <option value="">-- เลือกสินค้า --</option>
-                  {items.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name} ({item.unit})
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                <input
-                  type="number"
-                  min="1"
-                  value={row.quantity}
-                  onChange={(e) =>
-                    handleChange(index, "quantity", e.target.value)
-                  }
-                />
-              </td>
-              <td>{row.unit_price.toFixed(2)}</td>
-              <td>{row.total.toFixed(2)}</td>
-              <td>
-                <button
-                  onClick={() => handleDeleteRow(index)}
-                  className="delete-button"
-                >
-                  ❌
-                </button>
-              </td>
+  return (
+    <>
+      <h1 className="pr-title">สร้างใบขอซื้อ (Purchase Request - PR)</h1>
+      <div className="pr-container">
+        <table className="pr-table">
+          <thead>
+            <tr>
+              <th>สินค้า</th>
+              <th>จำนวน</th>
+              <th>ราคาต่อหน่วย</th>
+              <th>รวม</th>
+              <th>ลบ</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={index}>
+                <td>
+                  <select
+                    value={row.item_id}
+                    onChange={(e) =>
+                      handleChange(index, "item_id", e.target.value)
+                    }
+                  >
+                    <option value="">เลือกสินค้า</option>
+                    {items.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name} ({item.unit})
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    min="1"
+                    value={row.quantity}
+                    onChange={(e) =>
+                      handleChange(index, "quantity", e.target.value)
+                    }
+                  />
+                </td>
+                <td>{row.unit_price.toFixed(2)}</td>
+                <td>{row.total.toFixed(2)}</td>
+                <td>
+                  <button
+                    onClick={() => handleDeleteRow(index)}
+                    className="delete-button"
+                    disabled={rows.length === 1} // 🔹 ปิดปุ่มลบ ถ้ามีแถวเดียว
+                  >
+                    ❌
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="dynamic-spacing">
+          <p className="total-amount">Total: ฿{totalAmount.toFixed(2)}</p>
+        </div>
+      </div>
 
       <div className="button-container">
         <button onClick={addRow} className="pr-button add-item">
@@ -140,6 +155,6 @@ export default function PRPage() {
           ✅ สร้างใบ PR
         </button>
       </div>
-    </div>
+    </>
   );
 }
