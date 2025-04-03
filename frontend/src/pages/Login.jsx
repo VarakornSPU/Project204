@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import "../pages/Login.css";
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -14,20 +15,20 @@ export default function Login() {
       });
       localStorage.setItem('token', res.data.token);
       alert('Login successful!');
-      window.location.href = '/pr'; // เปลี่ยนเส้นทางไปหน้า PR
+      window.location.href = '/pr';
     } catch (err) {
       setError('Login failed');
     }
   };
 
   return (
-    <div className='flex items-center justify-center h-screen bg-gray-100'>
-      <form onSubmit={handleLogin} className='bg-white p-6 rounded shadow-md'>
-        <h2 className='text-xl mb-4'>Login</h2>
-        <input className='block border p-2 mb-2 w-full' type='text' placeholder='Username' value={username} onChange={(e) => setUsername(e.target.value)} />
-        <input className='block border p-2 mb-2 w-full' type='password' placeholder='Password' value={password} onChange={(e) => setPassword(e.target.value)} />
-        {error && <p className='text-red-500'>{error}</p>}
-        <button className='bg-blue-500 text-white px-4 py-2 rounded' type='submit'>Login</button>
+    <div className="container">
+      <form onSubmit={handleLogin} className="login-form">
+        <h2>LOGIN</h2>
+        <input className="input-field" type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+        <input className="input-field" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        {error && <p className="error-message">{error}</p>}
+        <button className="login-button" type="submit">Login</button>
       </form>
     </div>
   );

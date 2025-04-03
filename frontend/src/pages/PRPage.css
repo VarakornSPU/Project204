@@ -1,0 +1,95 @@
+/* ======= จัดการ Layout ======= */
+.pr-container {
+    margin-left: 260px; /* เว้นที่ให้ Sidebar */
+    padding: 20px;
+    min-height: 100vh; /* เต็มจอแนวตั้ง */
+    background-color: #f8f9fa; /* สีพื้นหลังอ่อน */
+  }
+  
+  /* ======= หัวข้อใหญ่ ======= */
+  .pr-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  /* ======= ปุ่ม เพิ่มสินค้า & สร้างใบ PR ======= */
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .pr-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .add-item {
+    background: #ff9800; /* ปุ่มสีส้ม */
+    color: white;
+  }
+  
+  .add-item:hover {
+    background: #e68900;
+  }
+  
+  .submit-pr {
+    background: #4caf50; /* ปุ่มสีเขียว */
+    color: white;
+    margin-top: 10px;
+  }
+  
+  .submit-pr:hover {
+    background: #388e3c;
+  }
+  
+  /* ======= ตารางรายการสินค้า ======= */
+  .pr-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .pr-table th,
+  .pr-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+  
+  .pr-table th {
+    background: #ff9800; /* หัวตารางสีส้ม */
+    color: white;
+  }
+  
+  .pr-table td select,
+  .pr-table td input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+  }
+  
+  .pr-table td input[type="number"] {
+    text-align: center;
+  }
+  
+  /* ======= Responsive ======= */
+  @media (max-width: 768px) {
+    .pr-container {
+      margin-left: 0; /* ให้เต็มหน้าจอในมือถือ */
+      padding: 15px;
+    }
+  }
+  

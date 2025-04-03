@@ -11,6 +11,8 @@ import MakePayment from './pages/MakePayment';
 import ReportPage from './pages/ReportPage';
 import UserManagement from './pages/UserManagement';
 
+import './App.css';
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();

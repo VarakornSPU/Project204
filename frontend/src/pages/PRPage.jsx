@@ -1,6 +1,7 @@
 // src/pages/PRPage.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./PRPage.css";
 
 export default function PRPage() {
   const [items, setItems] = useState([]);
@@ -45,6 +46,11 @@ export default function PRPage() {
     setRows(updatedRows);
   };
 
+  const handleDeleteRow = (index) => {
+    const updatedRows = rows.filter((_, i) => i !== index);
+    setRows(updatedRows);
+  };
+
   const handleSubmit = async () => {
     const token = localStorage.getItem("token");
     try {
@@ -70,34 +76,28 @@ export default function PRPage() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">สร้างใบขอซื้อ (Purchase Request - PR)</h1>
-      <button
-        onClick={addRow}
-        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded"
-      >
-        + เพิ่มสินค้า
-      </button>
+    <div className="pr-container">
+      <h1 className="pr-title">สร้างใบขอซื้อ (Purchase Request - PR)</h1>
 
-      <table className="table-auto w-full border mb-4">
+      <table className="pr-table">
         <thead>
-          <tr className="bg-gray-200">
-            <th className="p-2 border">สินค้า</th>
-            <th className="p-2 border">จำนวน</th>
-            <th className="p-2 border">ราคาต่อหน่วย</th>
-            <th className="p-2 border">รวม</th>
+          <tr>
+            <th>สินค้า</th>
+            <th>จำนวน</th>
+            <th>ราคาต่อหน่วย</th>
+            <th>รวม</th>
+            <th>ลบ</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row, index) => (
             <tr key={index}>
-              <td className="border p-1">
+              <td>
                 <select
                   value={row.item_id}
                   onChange={(e) =>
                     handleChange(index, "item_id", e.target.value)
                   }
-                  className="w-full border p-1"
                 >
                   <option value="">-- เลือกสินค้า --</option>
                   {items.map((item) => (
@@ -107,7 +107,7 @@ export default function PRPage() {
                   ))}
                 </select>
               </td>
-              <td className="border p-1">
+              <td>
                 <input
                   type="number"
                   min="1"
@@ -115,22 +115,31 @@ export default function PRPage() {
                   onChange={(e) =>
                     handleChange(index, "quantity", e.target.value)
                   }
-                  className="w-full border p-1"
                 />
               </td>
-              <td className="border text-center">{row.unit_price.toFixed(2)}</td>
-              <td className="border text-center">{row.total.toFixed(2)}</td>
+              <td>{row.unit_price.toFixed(2)}</td>
+              <td>{row.total.toFixed(2)}</td>
+              <td>
+                <button
+                  onClick={() => handleDeleteRow(index)}
+                  className="delete-button"
+                >
+                  ❌
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <button
-        onClick={handleSubmit}
-        className="mt-2 px-6 py-2 bg-green-600 text-white rounded"
-      >
-        ✅ สร้างใบ PR
-      </button>
+      <div className="button-container">
+        <button onClick={addRow} className="pr-button add-item">
+          + เพิ่มสินค้า
+        </button>
+        <button onClick={handleSubmit} className="pr-button submit-pr">
+          ✅ สร้างใบ PR
+        </button>
+      </div>
     </div>
   );
 }
