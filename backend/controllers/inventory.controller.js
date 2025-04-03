@@ -3,6 +3,12 @@ exports.receiveGoods = async (req, res) => {
   const { po_id, items } = req.body;
 
   try {
+    // ✅ ตรวจสอบว่า po_id มีอยู่ใน PurchaseOrders
+    const checkPO = await db.query('SELECT id FROM "PurchaseOrders" WHERE id = $1', [po_id]);
+    if (checkPO.rowCount === 0) {
+      return res.status(400).json({ error: 'PO ID not found in PurchaseOrders table.' });
+    }
+
     for (let item of items) {
       await db.query(
         'INSERT INTO stock_items (po_id, description, quantity, unit, received_at) VALUES ($1, $2, $3, $4, NOW())',
@@ -12,14 +18,16 @@ exports.receiveGoods = async (req, res) => {
 
     res.json({ message: 'Goods received successfully' });
   } catch (err) {
-    console.error('❌ [RECEIVE ERROR]', err.message);         // แสดงข้อความสั้น
-    console.error('🧾 Full error object:', err);               // แสดงวัตถุ error เต็ม
+    console.error('❌ [RECEIVE ERROR]', err.message);
+    console.error('🧾 Full error object:', err);
     res.status(500).json({
       error: 'Failed to receive goods',
       detail: err.message || err,
     });
   }
 };
+
+
 
 exports.autoGeneratePR = async (req, res) => {
   const db = req.db;
