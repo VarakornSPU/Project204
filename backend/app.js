@@ -14,7 +14,6 @@ const db = require('./models');
 // นำเข้า Routes ต่างๆ
 const itemRoutes = require('./routes/item.routes');
 const vendorRoutes = require('./routes/vendor.routes');
-const authRoutes = require('./routes/auth.routes');
 const prRoutes = require('./routes/pr.routes');
 const poRoutes = require('./routes/po.routes');
 const assetRoutes = require('./routes/asset.routes');
@@ -22,6 +21,10 @@ const paymentRoutes = require('./routes/payment.routes');
 const inventoryRoutes = require('./routes/inventory.routes');
 const reportRoutes = require('./routes/report.routes');
 const userRoutes = require('./routes/user.routes');
+const authRoutes = require('./routes/auth.routes');
+const adminRoutes = require('./routes/admin.routes');
+const procurementRoutes = require('./routes/procurement.routes');
+const financeRoutes = require('./routes/finance.routes');
 
 const app = express();
 
@@ -47,6 +50,10 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/vendors', vendorRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/procurement', procurementRoutes);
+app.use('/api/finance', financeRoutes);
 
 // ✅ Root
 app.get('/', (req, res) => res.send('✅ Purchase Management Backend Running'));
