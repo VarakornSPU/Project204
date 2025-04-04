@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import './POPage.css';
 
 export default function POPage() {
   const [vendors, setVendors] = useState([]);
@@ -102,9 +103,42 @@ export default function POPage() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold mb-4">Create Purchase Order (PO)</h1>
+    <>
+    <h1 className="po-title">Create Purchase Order (PO)</h1>
+    <div className="po-container">
       <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="receipt-container">
+  <div className="receipt-header">🛒 Purchase Order</div>
+
+  <table className="receipt-table">
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Unit</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {items.map((item, idx) => (
+        <tr key={idx}>
+          <td>{item.description}</td>
+          <td>{item.unit}</td>
+          <td>{item.unit_price.toFixed(2)}</td>
+          <td>{item.quantity}</td>
+          <td>{item.amount.toFixed(2)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <div className="receipt-total">
+    Total: ฿{items.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
+  </div>
+
+  {referenceNo && <div className="receipt-footer">Ref No: {referenceNo}</div>}
+</div>
 
         <select
           className="border p-2 w-full"
@@ -143,58 +177,14 @@ export default function POPage() {
           <option value="เช็ควาง 60 วัน">เช็ควาง 60 วัน</option>
         </select>
 
-        {items.length > 0 && (
-          <table className="w-full table-auto border">
-            <thead>
-              <tr>
-                <th className="border p-2">Description</th>
-                <th className="border p-2">Unit</th>
-                <th className="border p-2">Unit Price</th>
-                <th className="border p-2">Quantity</th>
-                <th className="border p-2">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, idx) => (
-                <tr key={idx}>
-                  <td className="border p-2">{item.description}</td>
-                  <td className="border p-2">{item.unit}</td>
-                  <td className="border p-2">{item.unit_price.toFixed(2)}</td>
-                  <td className="border p-2">
-                    <input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) => updateQuantity(idx, e.target.value)}
-                      className="w-20 border"
-                    />
-                  </td>
-                  <td className="border p-2">{item.amount.toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        {referenceNo && (
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Reference No</label>
-            <input
-              className="border p-2 w-full bg-gray-100 text-gray-700"
-              type="text"
-              value={referenceNo}
-              disabled
-              readOnly
-            />
-          </div>
-        )}
-
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="po-submit bg-blue-600 text-white px-4 py-2 rounded"
         >
           📝 Submit PO
         </button>
       </form>
     </div>
+    </>
   );
 }
