@@ -27,6 +27,7 @@ const procurementRoutes = require('./routes/procurement.routes');
 const financeRoutes = require('./routes/finance.routes');
 const managementRoutes = require('./routes/management.routes');
 const itRoutes = require('./routes/it.routes');
+const roleRoutes = require('./routes/role.routes');
 
 const app = express();
 
@@ -58,6 +59,8 @@ app.use('/api/procurement', procurementRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/management', managementRoutes);
 app.use('/api/it', itRoutes);
+app.use('/api/roles', roleRoutes);
+
 
 // ✅ Root
 app.get('/', (req, res) => res.send('✅ Purchase Management Backend Running'));
