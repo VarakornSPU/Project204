@@ -10,6 +10,14 @@ import RegisterAsset from './pages/RegisterAsset';
 import MakePayment from './pages/MakePayment';
 import ReportPage from './pages/ReportPage';
 import UserManagement from './pages/UserManagement';
+import Dashboard from './pages/Dashboards';
+import AdminDashboard from './pages/AdminDashboard';
+import ProcurementDashboard from './pages/ProcurementDashboard';
+import FinanceDashboard from './pages/FinanceDashboard';
+import ManagementDashboard from './pages/ManagementDashboard';
+import ITDashboard from './pages/ITDashboard';
+import Unauthorized from './pages/Unauthorized';
+
 
 import './App.css';
 
@@ -36,6 +44,14 @@ function App() {
       <div className="flex-1 p-6">
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/procurement/dashboard" element={<ProcurementDashboard />} />
+          <Route path="/finance/dashboard" element={<FinanceDashboard />} />
+          <Route path="/management/dashboard" element={<ManagementDashboard />} />
+          <Route path="/it/dashboard" element={<ITDashboard />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+
           <Route path="/pr" element={<PRPage />} />
           <Route path="/po" element={<POPage />} />
           <Route path="/receive" element={<ReceivePage />} />

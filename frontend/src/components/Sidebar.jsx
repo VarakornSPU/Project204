@@ -1,9 +1,13 @@
+// 📁 src/components/Sidebar.jsx
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import './Sidebar.css';
 
-export default function Sidebar() {
+const Sidebar = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+  const role = token ? jwtDecode(token).role : null;
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -12,18 +16,47 @@ export default function Sidebar() {
 
   return (
     <div className="sidebar">
-      <h2>Dashboard</h2>
+      <h2>📂 เมนู</h2>
       <ul>
-        <li><Link to="/pr">Purchase Requests (PR)</Link></li>
-        <li><Link to="/po">Purchase Orders (PO)</Link></li>
-        <li><Link to="/receive">Receive Goods</Link></li>
-        <li><Link to="/issue">Issue Items</Link></li>
-        <li><Link to="/asset">Register Asset</Link></li>
-        <li><Link to="/payment">Make Payment</Link></li>
-        <li><Link to="/report">Report</Link></li>
-        <li><Link to="/users">User Management</Link></li>
+        {/* Admin only */}
+        {role === 'admin' && (
+          <>
+            <li><Link to="/users">👤 จัดการผู้ใช้</Link></li>
+            <li><Link to="/report">📊 รายงานภาพรวม</Link></li>
+          </>
+        )}
+
+        {/* Procurement */}
+        {(role === 'procurement' || role === 'admin') && (
+          <>
+            <li><Link to="/pr">📝 สร้าง PR</Link></li>
+            <li><Link to="/po">📦 ออก PO</Link></li>
+            <li><Link to="/receive">📥 รับพัสดุ</Link></li>
+            <li><Link to="/asset">🏷️ ทะเบียนพัสดุ</Link></li>
+          </>
+        )}
+
+        {/* Finance */}
+        {(role === 'finance' || role === 'admin') && (
+          <>
+            <li><Link to="/payment">💸 ชำระเงิน</Link></li>
+            <li><Link to="/report">📄 รายงานการเงิน</Link></li>
+          </>
+        )}
+
+        {/* Management */}
+        {(role === 'management' || role === 'admin') && (
+          <li><Link to="/report">📈 รายงานวิเคราะห์งบ</Link></li>
+        )}
+
+        {/* IT */}
+        {role === 'it' && (
+          <li><Link to="/users">🛠️ ระบบผู้ใช้</Link></li>
+        )}
       </ul>
-      <button onClick={handleLogout}>Logout</button>
+      <button onClick={handleLogout}>🚪 ออกจากระบบ</button>
     </div>
   );
-}
+};
+
+export default Sidebar;

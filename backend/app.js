@@ -25,6 +25,8 @@ const authRoutes = require('./routes/auth.routes');
 const adminRoutes = require('./routes/admin.routes');
 const procurementRoutes = require('./routes/procurement.routes');
 const financeRoutes = require('./routes/finance.routes');
+const managementRoutes = require('./routes/management.routes');
+const itRoutes = require('./routes/it.routes');
 
 const app = express();
 
@@ -54,6 +56,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/procurement', procurementRoutes);
 app.use('/api/finance', financeRoutes);
+app.use('/api/management', managementRoutes);
+app.use('/api/it', itRoutes);
 
 // ✅ Root
 app.get('/', (req, res) => res.send('✅ Purchase Management Backend Running'));
