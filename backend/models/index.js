@@ -14,6 +14,7 @@ db.sequelize = sequelize;
 // 🔁 Import models
 db.Item = require('./item.model')(sequelize, DataTypes);
 db.Vendor = require('./vendor.model')(sequelize, DataTypes);
+db.User = require('./user.model')(sequelize, DataTypes);
 db.PurchaseRequest = require('./pr.model')(sequelize, DataTypes);
 db.PRDetail = require('./prdetail.model')(sequelize, DataTypes);
 db.PurchaseOrder = require('./po.model')(sequelize, DataTypes);
