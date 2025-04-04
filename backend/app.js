@@ -6,11 +6,12 @@ require('dotenv').config();
 
 const { Pool } = require('pg'); // 👈 เพิ่ม
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgres://postgres:password@localhost:5432/your_db_name',
+  connectionString: process.env.DATABASE_URL,
 });
 
 const db = require('./models');
 
+// นำเข้า Routes ต่างๆ
 const itemRoutes = require('./routes/item.routes');
 const vendorRoutes = require('./routes/vendor.routes');
 const authRoutes = require('./routes/auth.routes');
@@ -41,7 +42,7 @@ app.use('/api/pr', prRoutes);
 app.use('/api/po', poRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/inventory', inventoryRoutes); // << ใช้ req.db ตรงนี้
+app.use('/api/inventory', inventoryRoutes); // ใช้ req.db ตรงนี้
 app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
@@ -57,8 +58,30 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal Server Error', error: err.message });
 });
 
+// ✅ กำหนดการตั้งค่าการเชื่อมต่อ Sequelize
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  dialectOptions: {
+    ssl: { require: true, rejectUnauthorized: false },
+  },
+  timezone: '+07:00',  // กำหนด timezone เป็น UTC+7 (เขตเวลาไทย)
+});
+
+
+// ปรับ db ใช้งาน Sequelize
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+// ✅ ตรวจสอบการตั้งค่า timezone ในฐานข้อมูล
+sequelize.authenticate().then(() => {
+  console.log('✅ Database connection successful!');
+}).catch(err => {
+  console.error('❌ Unable to connect to the database:', err);
+});
+
 // ✅ Start server
-db.sequelize.sync({ alter: true }).then(() => {
+sequelize.sync({ alter: true }).then(() => {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`✅ Server is running on port ${PORT}`);

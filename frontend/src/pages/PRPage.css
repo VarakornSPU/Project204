@@ -169,3 +169,27 @@ body {
     }
   }
   
+  .required-date-wrapper {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .required-date-input {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  
+  .required-date-input:focus {
+    border-color: #ff7e5f;
+    box-shadow: 0 0 4px rgba(255, 126, 95, 0.3);
+  }
+  

@@ -4,7 +4,11 @@ import "./PRPage.css";
 
 export default function PRPage() {
   const [items, setItems] = useState([]);
-  const [rows, setRows] = useState([{ item_id: "", quantity: 1, unit_price: 0, total: 0 }]); // 🔹 ตั้งค่าเริ่มต้นให้มี 1 แถว
+  const [rows, setRows] = useState([
+    { item_id: "", quantity: 1, unit_price: 0, total: 0 },
+  ]); // 🔹 ตั้งค่าเริ่มต้นให้มี 1 แถว
+
+  const [requiredDate, setRequiredDate] = useState("");
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -46,6 +50,10 @@ export default function PRPage() {
       }
     } else if (field === "quantity") {
       const quantity = parseInt(value);
+      if (quantity < 1) {
+        alert("❌ ไม่สามารถระบุจำนวนน้อยกว่า 1 ได้");
+        return;
+      }
       updatedRows[index].quantity = quantity;
       updatedRows[index].total = updatedRows[index].unit_price * quantity;
     }
@@ -61,11 +69,21 @@ export default function PRPage() {
 
   const handleSubmit = async () => {
     const token = localStorage.getItem("token");
+
+    // ตรวจสอบจำนวนสินค้า
+    for (const row of rows) {
+      if (row.quantity < 1) {
+        alert("❌ จำนวนสินค้าไม่สามารถน้อยกว่า 1");
+        return;
+      }
+    }
+
     try {
       await axios.post(
         "http://localhost:5000/api/pr",
         {
           description: "รายการเบิกพัสดุทั่วไป",
+          required_date: requiredDate, // เพิ่มตัวแปรนี้
           items: rows.map((r) => ({
             item_id: r.item_id,
             quantity: r.quantity,
@@ -76,7 +94,8 @@ export default function PRPage() {
         }
       );
       alert("✅ สร้าง PR สำเร็จ!");
-      setRows([{ item_id: "", quantity: 1, unit_price: 0, total: 0 }]); // 🔹 รีเซ็ตให้เหลือ 1 แถวหลังจากกดส่ง
+      setRequiredDate(""); // เคลียร์ค่า required date
+      setRows([{ item_id: "", quantity: 1, unit_price: 0, total: 0 }]);
     } catch (err) {
       console.error("❌ สร้าง PR ล้มเหลว", err);
       alert("❌ สร้าง PR ล้มเหลว");
@@ -84,6 +103,18 @@ export default function PRPage() {
   };
 
   const totalAmount = rows.reduce((sum, row) => sum + row.total, 0);
+
+  // สร้างฟังก์ชั่นสำหรับการกำหนด min วันที่
+  const getMinDate = () => {
+    const today = new Date();
+    // Adjust the date to Thailand timezone (UTC +7)
+    const thailandDate = new Date(
+      today.toLocaleString("en-US", { timeZone: "Asia/Bangkok" })
+    );
+    thailandDate.setHours(0, 0, 0, 0); // set to start of the day to avoid timezone issues
+    const minDate = thailandDate.toISOString().split("T")[0]; // ใช้เพียงส่วนวันที่ที่ไม่รวมเวลา
+    return minDate;
+  };
 
   return (
     <>
@@ -142,6 +173,18 @@ export default function PRPage() {
             ))}
           </tbody>
         </table>
+        <div className="required-date-wrapper">
+          <label htmlFor="requiredDate">วันที่ต้องการ:</label>
+          <input
+            type="date"
+            id="requiredDate"
+            value={requiredDate}
+            onChange={(e) => setRequiredDate(e.target.value)}
+            className="required-date-input"
+            min={getMinDate()} // เพิ่ม min date ตามวันปัจจุบัน
+          />
+        </div>
+
         <div className="dynamic-spacing">
           <p className="total-amount">Total: ฿{totalAmount.toFixed(2)}</p>
         </div>

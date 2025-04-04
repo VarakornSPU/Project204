@@ -18,7 +18,6 @@ db.PurchaseRequest = require('./pr.model')(sequelize, DataTypes);
 db.PRDetail = require('./prdetail.model')(sequelize, DataTypes);
 db.PurchaseOrder = require('./po.model')(sequelize, DataTypes);
 db.POItem = require('./poitem.model')(sequelize, DataTypes);
-db.User = require('./user.model')(sequelize, DataTypes);
 
 // 🔗 Associations
 db.PurchaseRequest.hasMany(db.PRDetail, { foreignKey: 'pr_id' });
@@ -35,5 +34,7 @@ db.Vendor.hasMany(db.PurchaseOrder, { foreignKey: 'vendor_id' });
 
 db.PurchaseOrder.hasMany(db.POItem, { foreignKey: 'po_id', as: 'items' });
 db.POItem.belongsTo(db.PurchaseOrder, { foreignKey: 'po_id' });
+
+
 
 module.exports = db;
