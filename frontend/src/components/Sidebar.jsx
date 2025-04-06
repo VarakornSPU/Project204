@@ -1,17 +1,17 @@
 // 📁 src/components/Sidebar.jsx
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-import './Sidebar.css';
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import "./Sidebar.css";
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const role = token ? jwtDecode(token).role : null;
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
+    localStorage.removeItem("token");
+    navigate("/");
   };
 
   return (
@@ -19,39 +19,64 @@ const Sidebar = () => {
       <h2>📂 เมนู</h2>
       <ul>
         {/* Admin only */}
-        {role === 'admin' && (
+        {role === "admin" && (
           <>
-            <li><Link to="/users">👤 จัดการผู้ใช้</Link></li>
-            <li><Link to="/report">📊 รายงานภาพรวม</Link></li>
+            <li>
+              <Link to="/users">👤 จัดการผู้ใช้</Link>
+            </li>
+            <li>
+              <Link to="/report">📊 รายงานภาพรวม</Link>
+            </li>
           </>
         )}
 
         {/* Procurement */}
-        {(role === 'procurement' || role === 'admin') && (
+        {(role === "procurement" || role === "admin") && (
           <>
-            <li><Link to="/pr">📝 สร้าง PR</Link></li>
-            <li><Link to="/po">📦 ออก PO</Link></li>
-            <li><Link to="/receive">📥 รับพัสดุ</Link></li>
-            <li><Link to="/asset">🏷️ ทะเบียนพัสดุ</Link></li>
+            <li>
+              <Link to="/pr">📝 สร้าง PR</Link>
+            </li>
+            <li>
+              <Link to="/po">📦 ออก PO</Link>
+            </li>
+            <li>
+              <Link to="/receive">📥 รับพัสดุ</Link>
+            </li>
+            <li>
+              <Link to="/asset">🏷️ ทะเบียนพัสดุ</Link>
+            </li>
           </>
         )}
 
         {/* Finance */}
-        {(role === 'finance' || role === 'admin') && (
+        {(role === "finance" || role === "admin") && (
           <>
-            <li><Link to="/payment">💸 ชำระเงิน</Link></li>
-            <li><Link to="/report">📄 รายงานการเงิน</Link></li>
+            <li>
+              <Link to="/payment">💸 ชำระเงิน</Link>
+            </li>
+            <li>
+              <Link to="/report">📄 รายงานการเงิน</Link>
+            </li>
           </>
         )}
 
         {/* Management */}
-        {(role === 'management' || role === 'admin') && (
-          <li><Link to="/report">📈 รายงานวิเคราะห์งบ</Link></li>
+        {(role === "management" || role === "admin") && (
+          <>
+            <li>
+              <Link to="/report">📈 รายงานวิเคราะห์งบ</Link>
+            </li>
+            <li>
+              <Link to="/approve-pr">✅ อนุมัติใบขอซื้อ</Link>
+            </li>
+          </>
         )}
 
         {/* IT */}
-        {role === 'it' && (
-          <li><Link to="/users">🛠️ ระบบผู้ใช้</Link></li>
+        {role === "it" && (
+          <li>
+            <Link to="/users">🛠️ ระบบผู้ใช้</Link>
+          </li>
         )}
       </ul>
       <button onClick={handleLogout}>🚪 ออกจากระบบ</button>

@@ -1,9 +1,8 @@
 const db = require('../models');
 const { PurchaseOrder, POItem, PurchaseRequest, Vendor } = db;
 
-// ✅ CREATE PO
 exports.createPO = async (req, res) => {
-  const { pr_id, vendor_id, payment_terms, items } = req.body;
+  const { pr_id, vendor_id, payment_terms, reference_no, items } = req.body;
 
   try {
     console.log('📥 CREATE PO BODY:', req.body);
@@ -12,34 +11,38 @@ exports.createPO = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // ตรวจสอบว่า PR มีอยู่จริง
+    // ✅ ย้ายมาใส่ตรงนี้
+    const existingPO = await PurchaseOrder.findOne({ where: { pr_id } });
+    if (existingPO) {
+      return res.status(400).json({
+        message: `PR ID ${pr_id} has already been used to create a PO.`,
+      });
+    }
+
     const pr = await PurchaseRequest.findByPk(pr_id);
     if (!pr) {
       return res.status(400).json({ message: `PR ID ${pr_id} does not exist` });
     }
 
-    // ตรวจสอบว่า Vendor มีอยู่จริง
     const vendor = await Vendor.findByPk(vendor_id);
     if (!vendor) {
       return res.status(400).json({ message: `Vendor ID ${vendor_id} does not exist` });
     }
 
-    const reference_no = 'PO' + Date.now();
-    const total_amount = items.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+    const ref = reference_no || 'PO' + Date.now();
 
-    console.log('✅ total_amount:', total_amount);
+    const total_amount = items.reduce((sum, item) => sum + parseFloat(item.amount), 0);
 
     const po = await PurchaseOrder.create({
       pr_id,
       vendor_id,
       payment_terms,
-      reference_no,
+      reference_no: ref,
       total_amount,
       status: 'pending',
     });
 
     for (const item of items) {
-      console.log('🧾 item:', item);
       await POItem.create({
         po_id: po.id,
         description: item.description,
@@ -66,6 +69,7 @@ exports.createPO = async (req, res) => {
     });
   }
 };
+
 
 // ✅ GET ALL POs
 exports.getAllPOs = async (req, res) => {

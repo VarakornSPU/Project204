@@ -1,203 +1,256 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "./PRPage.css";
 
-export default function PRPage() {
+const PRPage = () => {
   const [items, setItems] = useState([]);
-  const [rows, setRows] = useState([
-    { item_id: "", quantity: 1, unit_price: 0, total: 0 },
-  ]); // 🔹 ตั้งค่าเริ่มต้นให้มี 1 แถว
+  const [user, setUser] = useState(null);
+  const [form, setForm] = useState({
+    pr_number: "",
+    created_date: "",
+    description: "",
+    required_date: "",
+    items: [{ item_id: "", quantity: 1 }],
+  });
+  const [latestPR, setLatestPR] = useState(null);
 
-  const [requiredDate, setRequiredDate] = useState("");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const fetchItems = async () => {
-      const token = localStorage.getItem("token");
-      try {
-        const res = await axios.get("http://localhost:5000/api/items", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setItems(res.data);
-      } catch (err) {
-        console.error("ไม่สามารถโหลดสินค้าได้", err);
-      }
-    };
     fetchItems();
+    fetchUser();
+    generatePrNumber();
   }, []);
 
-  useEffect(() => {
-    const spacing = document.querySelector(".dynamic-spacing");
-    if (spacing) {
-      spacing.style.minHeight = `${30 + rows.length * 5}px`; // 🔹 ขยับ Total Amount ตามจำนวนแถว
-    }
-  }, [rows]);
+  const fetchItems = async () => {
+    const res = await axios.get("/api/items", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setItems(res.data);
+  };
 
-  const addRow = () => {
-    setRows([...rows, { item_id: "", quantity: 1, unit_price: 0, total: 0 }]);
+  const fetchUser = async () => {
+    const res = await axios.get("/api/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setUser(res.data);
+  };
+
+  const generatePrNumber = async () => {
+    const res = await axios.get("/api/pr/generate-number", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setForm((prev) => ({ ...prev, pr_number: res.data.pr_number }));
   };
 
   const handleChange = (index, field, value) => {
-    const updatedRows = [...rows];
-    if (field === "item_id") {
-      const selectedItem = items.find((item) => item.id === parseInt(value));
-      if (selectedItem) {
-        updatedRows[index] = {
-          item_id: selectedItem.id,
-          quantity: 1,
-          unit_price: parseFloat(selectedItem.unit_price),
-          total: parseFloat(selectedItem.unit_price),
-        };
-      }
-    } else if (field === "quantity") {
-      const quantity = parseInt(value);
-      if (quantity < 1) {
-        alert("❌ ไม่สามารถระบุจำนวนน้อยกว่า 1 ได้");
-        return;
-      }
-      updatedRows[index].quantity = quantity;
-      updatedRows[index].total = updatedRows[index].unit_price * quantity;
-    }
-    setRows(updatedRows);
+    const updated = [...form.items];
+    updated[index][field] = field === "quantity" ? Number(value) : value;
+    setForm({ ...form, items: updated });
   };
 
-  const handleDeleteRow = (index) => {
-    if (rows.length > 1) {
-      const updatedRows = rows.filter((_, i) => i !== index);
-      setRows(updatedRows);
-    }
+  const addRow = () => {
+    setForm({
+      ...form,
+      items: [...form.items, { item_id: "", quantity: 1 }],
+    });
+  };
+
+  const removeRow = (index) => {
+    if (form.items.length === 1) return;
+    const updated = [...form.items];
+    updated.splice(index, 1);
+    setForm({ ...form, items: updated });
   };
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem("token");
+    const preparedItems = form.items.map((row) => {
+      const selectedItem = items.find((i) => i.id === Number(row.item_id));
+      return {
+        item_id: row.item_id,
+        quantity: row.quantity,
+        unit_price: selectedItem?.unit_price || 0,
+      };
+    });
 
-    // ตรวจสอบจำนวนสินค้า
-    for (const row of rows) {
-      if (row.quantity < 1) {
-        alert("❌ จำนวนสินค้าไม่สามารถน้อยกว่า 1");
-        return;
-      }
-    }
+    const hasEmpty = preparedItems.some((i) => !i.item_id);
+    if (hasEmpty) return alert("กรุณาเลือกรายการสินค้าให้ครบ");
 
     try {
-      await axios.post(
-        "http://localhost:5000/api/pr",
+      const res = await axios.post(
+        "/api/pr",
         {
-          description: "รายการเบิกพัสดุทั่วไป",
-          required_date: requiredDate, // เพิ่มตัวแปรนี้
-          items: rows.map((r) => ({
-            item_id: r.item_id,
-            quantity: r.quantity,
-          })),
+          ...form,
+          items: preparedItems,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      alert("✅ สร้าง PR สำเร็จ!");
-      setRequiredDate(""); // เคลียร์ค่า required date
-      setRows([{ item_id: "", quantity: 1, unit_price: 0, total: 0 }]);
+
+      alert("สร้างใบขอซื้อสำเร็จ");
+      setLatestPR(res.data);
+      setForm({
+        pr_number: "",
+        created_date: "",
+        description: "",
+        required_date: "",
+        items: [{ item_id: "", quantity: 1 }],
+      });
+      generatePrNumber();
     } catch (err) {
-      console.error("❌ สร้าง PR ล้มเหลว", err);
-      alert("❌ สร้าง PR ล้มเหลว");
+      console.error(err);
+      alert("ไม่สามารถสร้าง PR ได้");
     }
   };
 
-  const totalAmount = rows.reduce((sum, row) => sum + row.total, 0);
-
-  // สร้างฟังก์ชั่นสำหรับการกำหนด min วันที่
-  const getMinDate = () => {
-    const today = new Date();
-    // Adjust the date to Thailand timezone (UTC +7)
-    const thailandDate = new Date(
-      today.toLocaleString("en-US", { timeZone: "Asia/Bangkok" })
-    );
-    thailandDate.setHours(0, 0, 0, 0); // set to start of the day to avoid timezone issues
-    const minDate = thailandDate.toISOString().split("T")[0]; // ใช้เพียงส่วนวันที่ที่ไม่รวมเวลา
-    return minDate;
-  };
-
   return (
-    <>
-      <h1 className="pr-title">สร้างใบขอซื้อ (Purchase Request - PR)</h1>
-      <div className="pr-container">
-        <table className="pr-table">
-          <thead>
-            <tr>
-              <th>สินค้า</th>
-              <th>จำนวน</th>
-              <th>ราคาต่อหน่วย</th>
-              <th>รวม</th>
-              <th>ลบ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => (
-              <tr key={index}>
-                <td>
-                  <select
-                    value={row.item_id}
-                    onChange={(e) =>
-                      handleChange(index, "item_id", e.target.value)
-                    }
-                  >
-                    <option value="">เลือกสินค้า</option>
-                    {items.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} ({item.unit})
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    min="1"
-                    value={row.quantity}
-                    onChange={(e) =>
-                      handleChange(index, "quantity", e.target.value)
-                    }
-                  />
-                </td>
-                <td>{row.unit_price.toFixed(2)}</td>
-                <td>{row.total.toFixed(2)}</td>
-                <td>
-                  <button
-                    onClick={() => handleDeleteRow(index)}
-                    className="delete-button"
-                    disabled={rows.length === 1} // 🔹 ปิดปุ่มลบ ถ้ามีแถวเดียว
-                  >
-                    ❌
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="required-date-wrapper">
-          <label htmlFor="requiredDate">วันที่ต้องการ:</label>
+    <div className="p-6 max-w-5xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">สร้างใบขอซื้อ (Purchase Request)</h2>
+
+      <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block font-medium mb-1">เลขที่ใบขอซื้อ</label>
           <input
-            type="date"
-            id="requiredDate"
-            value={requiredDate}
-            onChange={(e) => setRequiredDate(e.target.value)}
-            className="required-date-input"
-            min={getMinDate()} // เพิ่ม min date ตามวันปัจจุบัน
+            type="text"
+            className="w-full border p-2 bg-gray-100"
+            value={form.pr_number}
+            readOnly
           />
         </div>
-
-        <div className="dynamic-spacing">
-          <p className="total-amount">Total: ฿{totalAmount.toFixed(2)}</p>
+        <div>
+          <label className="block font-medium mb-1">ผู้จัดทำ</label>
+          <input
+            type="text"
+            className="w-full border p-2 bg-gray-100"
+            value={user ? `${user.first_name} ${user.last_name}` : ""}
+            readOnly
+          />
+        </div>
+        <div>
+          <label className="block font-medium mb-1">วันที่</label>
+          <input
+            type="date"
+            className="w-full border p-2"
+            value={form.created_date}
+            onChange={(e) => setForm({ ...form, created_date: e.target.value })}
+          />
         </div>
       </div>
 
-      <div className="button-container">
-        <button onClick={addRow} className="pr-button add-item">
-          + เพิ่มสินค้า
-        </button>
-        <button onClick={handleSubmit} className="pr-button submit-pr">
-          ✅ สร้างใบ PR
-        </button>
+      <div className="mb-4">
+        <label className="block font-medium mb-1">คำอธิบายหัวรายการ</label>
+        <input
+          type="text"
+          className="w-full border p-2"
+          value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+        />
       </div>
-    </>
+
+      <div className="mb-6">
+        <label className="block font-medium mb-1">วันที่ต้องการ</label>
+        <input
+          type="date"
+          className="w-full border p-2"
+          value={form.required_date}
+          onChange={(e) => setForm({ ...form, required_date: e.target.value })}
+        />
+      </div>
+
+      <h3 className="font-semibold text-lg mb-2">รายการพัสดุ</h3>
+      <div className="grid grid-cols-6 gap-2 font-bold text-sm bg-gray-100 p-2 rounded mb-2">
+        <div>ชื่อสินค้า</div>
+        <div>หน่วยนับ</div>
+        <div>จำนวน</div>
+        <div>ราคาต่อหน่วย</div>
+        <div>จำนวนเงิน</div>
+        <div></div>
+      </div>
+
+      {form.items.map((row, index) => {
+        const selected = items.find((i) => i.id === Number(row.item_id));
+        return (
+          <div key={index} className="grid grid-cols-6 gap-2 mb-2 items-center">
+            <select
+              className="border p-2"
+              value={row.item_id}
+              onChange={(e) => handleChange(index, "item_id", e.target.value)}
+            >
+              <option value="">-- เลือกสินค้า --</option>
+              {items.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.name}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              className="border p-2 bg-gray-100"
+              readOnly
+              value={selected?.unit || ""}
+              placeholder="หน่วย"
+            />
+
+            <input
+              type="number"
+              className="border p-2"
+              value={row.quantity}
+              placeholder="จำนวน"
+              onChange={(e) => handleChange(index, "quantity", e.target.value)}
+            />
+
+            <input
+              type="text"
+              className="border p-2 bg-gray-100"
+              readOnly
+              value={selected?.unit_price || ""}
+              placeholder="ราคาต่อหน่วย"
+            />
+
+            <input
+              type="text"
+              className="border p-2 bg-gray-100"
+              readOnly
+              value={
+                selected
+                  ? (row.quantity * selected.unit_price).toFixed(2)
+                  : ""
+              }
+              placeholder="จำนวนเงิน"
+            />
+
+            {form.items.length > 1 && (
+              <button onClick={() => removeRow(index)} className="text-red-500">
+                ลบ
+              </button>
+            )}
+          </div>
+        );
+      })}
+
+      <button
+        onClick={addRow}
+        className="bg-gray-200 px-3 py-1 rounded mb-4 mt-2"
+      >
+        + เพิ่มรายการ
+      </button>
+
+      <p className="text-right font-bold text-lg mb-4">
+        รวมทั้งสิ้น: {form.items.reduce((sum, row) => {
+          const selected = items.find((i) => i.id === Number(row.item_id));
+          return sum + (selected ? row.quantity * selected.unit_price : 0);
+        }, 0).toFixed(2)} บาท
+      </p>
+
+      <button
+        onClick={handleSubmit}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        บันทึกใบขอซื้อ
+      </button>
+    </div>
   );
-}
+};
+
+export default PRPage;

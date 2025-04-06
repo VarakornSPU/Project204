@@ -17,6 +17,7 @@ import FinanceDashboard from './pages/FinanceDashboard';
 import ManagementDashboard from './pages/ManagementDashboard';
 import ITDashboard from './pages/ITDashboard';
 import Unauthorized from './pages/Unauthorized';
+import ApprovePRPage from './pages/ApprovePRPage';
 
 
 import './App.css';
@@ -60,6 +61,7 @@ function App() {
           <Route path="/payment" element={<MakePayment />} />
           <Route path="/report" element={<ReportPage />} />
           <Route path="/users" element={<UserManagement />} />
+          <Route path="/approve-pr" element={<ApprovePRPage />} />
         </Routes>
       </div>
     </div>
