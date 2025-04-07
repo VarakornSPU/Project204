@@ -19,6 +19,7 @@ db.POItem = require('./poitem.model')(sequelize, DataTypes);
 db.Budget = require('./budget.model')(sequelize, DataTypes);
 db.Payment = require('./payment.model')(sequelize, DataTypes); // ✅ เพิ่ม model Payment
 db.Receipt = require('./receipt.model')(sequelize, DataTypes);
+db.Invoice = require('./invoice.model')(sequelize, DataTypes);
 
 // ✅ ความสัมพันธ์ของ Payment → PO
 db.Payment.belongsTo(db.PurchaseOrder, { foreignKey: 'po_id' });

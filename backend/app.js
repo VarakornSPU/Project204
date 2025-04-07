@@ -2,16 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-// const router = express.Router();
-// const reportController = require('../controllers/report.controller');
-
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const bodyParser = require('body-parser');
-// const router = express.Router();
-// const reportController = require('../controllers/report.controller');
-// const { authJwt } = require('../middleware');
 require('dotenv').config();
 
 const { Pool } = require('pg'); // 👈 เพิ่ม
@@ -40,10 +30,10 @@ const itRoutes = require('./routes/it.routes');
 const roleRoutes = require('./routes/role.routes');
 const budgetRoutes = require('./routes/budget.routes');
 
-const app = express();
+const receiptRoutes = require('./routes/receipt.routes'); // ✅ เพิ่มตรงนี้
+const invoiceRoutes = require('./routes/invoice.routes');
 
-// router.get('/print/:type/:id', [authJwt.verifyToken], reportController.printDocument);
-// router.get('/balance/:vendor_id', [authJwt.verifyToken], reportController.reportVendorBalance);
+const app = express();
 
 // ✅ Middleware
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
@@ -69,7 +59,7 @@ app.use('/api/po', poRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/inventory', inventoryRoutes); // ใช้ req.db ตรงนี้
-app.use('/api/report', reportRoutes);  // เปลี่ยนจาก /api/reports เป็น /api/report ให้ตรงกับ frontend
+app.use('/api/report', reportRoutes); // เปลี่ยนจาก /api/reports เป็น /api/report ให้ตรงกับ frontend
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/vendors', vendorRoutes);
@@ -81,6 +71,11 @@ app.use('/api/management', managementRoutes);
 app.use('/api/it', itRoutes);
 app.use('/api/roles', roleRoutes);
 app.use("/api/budgets", budgetRoutes);
+app.use('/api/invoices', invoiceRoutes);
+
+
+// ✅ Receipt Routes
+receiptRoutes(app); // ✅ แล้วเรียกใช้แบบนี้
 
 // ✅ Root
 app.get('/', (req, res) => res.send('✅ Purchase Management Backend Running'));

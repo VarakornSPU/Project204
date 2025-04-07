@@ -19,6 +19,8 @@ import ITDashboard from './pages/ITDashboard';
 import Unauthorized from './pages/Unauthorized';
 import ApprovePRPage from './pages/ApprovePRPage';
 import BudgetPage from './pages/BudgetPage';
+import CreateInvoice from './pages/CreateInvoice';
+
 import './App.css';
 
 function App() {
@@ -58,6 +60,7 @@ function App() {
           <Route path="/po" element={<POPage />} />
           <Route path="/receive" element={<ReceivePage />} />
           <Route path="/budget" element={<BudgetPage />} />
+          <Route path="/invoice" element={<CreateInvoice />} />
           <Route path="/issue" element={<IssuePage />} />
           <Route path="/asset" element={<RegisterAsset />} />
           <Route path="/payment" element={<MakePayment />} />

@@ -11,7 +11,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem('role');   // ✅ ลบ role ด้วย
+    localStorage.removeItem("role"); // ✅ ลบ role ด้วย
     navigate("/");
   };
 
@@ -55,7 +55,9 @@ const Sidebar = () => {
             <li>
               <Link to="/budget">📊 งบประมาณ</Link>
             </li>
-
+            <li>
+              <Link to="/invoice">🧾 สร้างใบแจ้งหนี้</Link>
+            </li>
             <li>
               <Link to="/payment">💸 ชำระเงิน</Link>
             </li>
