@@ -17,8 +17,16 @@ db.PRDetail = require('./prdetail.model')(sequelize, DataTypes);
 db.PurchaseOrder = require('./po.model')(sequelize, DataTypes);
 db.POItem = require('./poitem.model')(sequelize, DataTypes);
 db.Budget = require('./budget.model')(sequelize, DataTypes);
+db.Payment = require('./payment.model')(sequelize, DataTypes); // ✅ เพิ่ม model Payment
 
-// ✅ เรียก associate จากทุก model ที่มีความสัมพันธ์
+// ✅ ความสัมพันธ์ของ Payment → PO
+db.Payment.belongsTo(db.PurchaseOrder, { foreignKey: 'po_id' });
+db.PurchaseOrder.hasMany(db.Payment, { foreignKey: 'po_id' });
+
+// ✅ ความสัมพันธ์ของ PO → Vendor (มีอยู่แล้วหรือเพิ่มไว้ให้แน่ใจ)
+db.PurchaseOrder.belongsTo(db.Vendor, { foreignKey: 'vendor_id' });
+
+// ✅ เรียก associate จาก model ที่กำหนดเอง (ถ้ามี)
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);

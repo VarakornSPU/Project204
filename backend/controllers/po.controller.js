@@ -1,12 +1,10 @@
 const db = require('../models');
-const { PurchaseOrder, POItem, PurchaseRequest, Vendor, Budget } = db;
+const { PurchaseOrder, POItem, PurchaseRequest, Vendor, Budget, Payment } = db;
 
 exports.createPO = async (req, res) => {
   const { pr_id, vendor_id, payment_terms, reference_no, items } = req.body;
 
   try {
-    console.log('📥 CREATE PO BODY:', req.body);
-
     if (!pr_id || !vendor_id || !payment_terms || !items || items.length === 0) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
@@ -31,12 +29,12 @@ exports.createPO = async (req, res) => {
     const ref = reference_no || 'PO' + Date.now();
     const total_amount = items.reduce((sum, item) => sum + parseFloat(item.amount), 0);
 
-    // ✅ ตรวจสอบงบรวมก่อนสร้าง PO
     const year = new Date().getFullYear();
     const budget = await Budget.findOne({ where: { year } });
     if (!budget) {
       return res.status(400).json({ message: 'ยังไม่ได้ตั้งค่างบประมาณประจำปี' });
     }
+
     if (parseFloat(budget.used_amount) + total_amount > parseFloat(budget.initial_amount)) {
       return res.status(400).json({ message: 'งบประมาณบริษัทไม่เพียงพอ' });
     }
@@ -62,7 +60,6 @@ exports.createPO = async (req, res) => {
       });
     }
 
-    // ✅ หักยอดงบหลังสร้าง PO
     budget.used_amount += total_amount;
     await budget.save();
 
@@ -77,12 +74,10 @@ exports.createPO = async (req, res) => {
     res.status(500).json({
       message: 'Failed to create PO',
       error: err.message,
-      stack: err.stack,
     });
   }
 };
 
-// ✅ GET ALL POs
 exports.getAllPOs = async (req, res) => {
   try {
     const pos = await PurchaseOrder.findAll({
@@ -105,7 +100,6 @@ exports.getAllPOs = async (req, res) => {
   }
 };
 
-// ✅ GET PO BY ID
 exports.getPOById = async (req, res) => {
   const { id } = req.params;
 
@@ -130,5 +124,30 @@ exports.getPOById = async (req, res) => {
       message: 'Failed to fetch PO',
       error: err.message,
     });
+  }
+};
+
+// ✅ ใหม่: ดึงเฉพาะ PO ที่มีการชำระเงินแล้ว
+exports.getPaidPOs = async (req, res) => {
+  try {
+    const payments = await Payment.findAll({
+      include: [{
+        model: PurchaseOrder,
+        include: [{ model: Vendor }],
+        attributes: ['po_number', 'date', 'total_amount'],
+      }],
+    });
+
+    const data = payments.map(payment => ({
+      po_number: payment.PurchaseOrder.po_number,
+      date: payment.PurchaseOrder.date,
+      vendor_name: payment.PurchaseOrder.Vendor?.name || 'ไม่ทราบ',
+      total_amount: payment.PurchaseOrder.total_amount,
+    }));
+
+    res.json(data);
+  } catch (error) {
+    console.error('getPaidPOs error:', error);
+    res.status(500).json({ message: 'ไม่สามารถดึงข้อมูล PO ที่จ่ายเงินแล้วได้', error: error.message });
   }
 };

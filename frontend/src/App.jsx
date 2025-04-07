@@ -18,6 +18,8 @@ import ManagementDashboard from './pages/ManagementDashboard';
 import ITDashboard from './pages/ITDashboard';
 import Unauthorized from './pages/Unauthorized';
 import ApprovePRPage from './pages/ApprovePRPage';
+import BudgetPage from './pages/BudgetPage';
+
 
 
 import './App.css';
@@ -56,6 +58,8 @@ function App() {
           <Route path="/pr" element={<PRPage />} />
           <Route path="/po" element={<POPage />} />
           <Route path="/receive" element={<ReceivePage />} />
+          <Route path="/budget" element={<BudgetPage />} />
+
           <Route path="/issue" element={<IssuePage />} />
           <Route path="/asset" element={<RegisterAsset />} />
           <Route path="/payment" element={<MakePayment />} />

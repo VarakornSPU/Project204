@@ -52,6 +52,10 @@ const Sidebar = () => {
         {(role === "finance" || role === "admin") && (
           <>
             <li>
+              <Link to="/budget">📊 งบประมาณ</Link>
+            </li>
+
+            <li>
               <Link to="/payment">💸 ชำระเงิน</Link>
             </li>
             <li>

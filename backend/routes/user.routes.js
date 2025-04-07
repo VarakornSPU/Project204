@@ -3,11 +3,12 @@ const { User, Role } = require('../models');
 const authenticate = require('../middlewares/authenticate');
 const router = express.Router();
 
-// ✅ GET /api/users - ดึง users ทั้งหมด
+// ✅ GET /api/users - ดึง users ทั้งหมดเรียงตาม id
 router.get('/', authenticate, async (req, res) => {
   try {
     const users = await User.findAll({
-      include: [{ model: Role, as: 'role' }]
+      include: [{ model: Role, as: 'role' }],
+      order: [['id', 'ASC']],
     });
     res.json(users);
   } catch (err) {
@@ -32,9 +33,13 @@ router.put('/:id/role', authenticate, async (req, res) => {
   }
 });
 
-// ✅ DELETE /api/users/:id - ลบผู้ใช้
+// ✅ DELETE /api/users/:id - ลบผู้ใช้ (ห้ามลบตัวเอง)
 router.delete('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
+
+  if (parseInt(id) === req.user.id) {
+    return res.status(400).json({ message: "ไม่สามารถลบผู้ใช้ที่กำลังใช้งานอยู่ได้" });
+  }
 
   try {
     const user = await User.findByPk(id);

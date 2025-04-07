@@ -153,6 +153,14 @@ export default function POPage() {
       <h1 className="title">Create Purchase Order (PO)</h1>
       <div className="po-container">
         <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="po-input mb-4 p-3 bg-gray-100 rounded">
+        <p>
+          💰 <strong>งบประมาณ:</strong> {new Date().getFullYear()} | รวม: ฿
+          {budget.initial_amount.toFixed(2)} | ใช้ไป: ฿
+          {budget.used_amount.toFixed(2)} | คงเหลือ: ฿
+          {(budget.initial_amount - budget.used_amount).toFixed(2)}
+        </p>
+        </div>
           <div className="receipt-container">
             <div className="receipt-header">🛒 Purchase Order</div>
             <p><strong>PO Date:</strong> {poDate}</p>
@@ -163,14 +171,6 @@ export default function POPage() {
             <p><strong>Referenced PR No:</strong> {prNumber}</p>
             <p><strong>Payment Terms:</strong> {paymentTerms}</p>
             <p><strong>Reference No:</strong> {referenceNo}</p>
-        <div className="po-input mb-4 p-3 bg-gray-100 rounded">
-        <p>
-          💰 <strong>งบประมาณ:</strong> {new Date().getFullYear()} | รวม: ฿
-          {budget.initial_amount.toFixed(2)} | ใช้ไป: ฿
-          {budget.used_amount.toFixed(2)} | คงเหลือ: ฿
-          {(budget.initial_amount - budget.used_amount).toFixed(2)}
-        </p>
-        </div>
 
             <table className="receipt-table">
               <thead>

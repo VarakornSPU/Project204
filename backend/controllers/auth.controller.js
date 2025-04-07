@@ -5,13 +5,27 @@ const User = db.User;
 const Role = db.Role;
 
 exports.register = async (req, res) => {
-  const { username, password, role_id } = req.body;
+  const { username, password, role_id, first_name, last_name } = req.body;
   try {
+    if (!username || !password || !role_id || !first_name || !last_name) {
+      return res.status(400).json({ message: 'กรุณากรอกข้อมูลให้ครบ' });
+    }
+
+    const existing = await User.findOne({ where: { username } });
+    if (existing) return res.status(400).json({ message: 'Username already exists' });
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const role = await Role.findByPk(role_id);
     if (!role) return res.status(400).json({ message: 'Invalid role_id' });
 
-    const user = await User.create({ username, password: hashedPassword, role_id: role.id });
+    const user = await User.create({
+      username,
+      password: hashedPassword,
+      role_id: role.id,
+      first_name,
+      last_name,
+    });
+
     return res.status(201).json({ message: 'User registered successfully', user });
   } catch (err) {
     console.error(err);
