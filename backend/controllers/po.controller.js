@@ -1,5 +1,5 @@
 const db = require('../models');
-const { PurchaseOrder, POItem, PurchaseRequest, Vendor } = db;
+const { PurchaseOrder, POItem, PurchaseRequest, Vendor, Budget } = db;
 
 exports.createPO = async (req, res) => {
   const { pr_id, vendor_id, payment_terms, reference_no, items } = req.body;
@@ -11,7 +11,6 @@ exports.createPO = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // ✅ ย้ายมาใส่ตรงนี้
     const existingPO = await PurchaseOrder.findOne({ where: { pr_id } });
     if (existingPO) {
       return res.status(400).json({
@@ -30,8 +29,17 @@ exports.createPO = async (req, res) => {
     }
 
     const ref = reference_no || 'PO' + Date.now();
-
     const total_amount = items.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+
+    // ✅ ตรวจสอบงบรวมก่อนสร้าง PO
+    const year = new Date().getFullYear();
+    const budget = await Budget.findOne({ where: { year } });
+    if (!budget) {
+      return res.status(400).json({ message: 'ยังไม่ได้ตั้งค่างบประมาณประจำปี' });
+    }
+    if (parseFloat(budget.used_amount) + total_amount > parseFloat(budget.initial_amount)) {
+      return res.status(400).json({ message: 'งบประมาณบริษัทไม่เพียงพอ' });
+    }
 
     const po = await PurchaseOrder.create({
       pr_id,
@@ -54,6 +62,10 @@ exports.createPO = async (req, res) => {
       });
     }
 
+    // ✅ หักยอดงบหลังสร้าง PO
+    budget.used_amount += total_amount;
+    await budget.save();
+
     res.status(201).json({
       message: 'PO created successfully',
       po_id: po.id,
@@ -69,7 +81,6 @@ exports.createPO = async (req, res) => {
     });
   }
 };
-
 
 // ✅ GET ALL POs
 exports.getAllPOs = async (req, res) => {

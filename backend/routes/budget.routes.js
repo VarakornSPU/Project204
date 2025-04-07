@@ -1,9 +1,9 @@
-const router = require('express').Router();
-const controller = require('../controllers/budget.controller');
-const authenticate = require('../middlewares/authenticate');
-const authorize = require('../middlewares/authorize');
+// backend/routes/budget.routes.js
+const express = require("express");
+const router = express.Router();
+const controller = require("../controllers/budget.controller");
+const authenticate = require("../middlewares/authenticate");
 
-router.get('/', authenticate, authorize(["finance", "admin"]), controller.getAllBudgets);
-router.post('/', authenticate, authorize(["finance", "admin"]), controller.createBudget);
+router.get("/", authenticate, controller.getAllBudgets);
 
 module.exports = router;

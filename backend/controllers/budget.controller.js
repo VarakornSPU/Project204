@@ -4,12 +4,20 @@ const Budget = db.Budget;
 // GET งบทั้งหมด
 exports.getAllBudgets = async (req, res) => {
   try {
-    const budgets = await Budget.findAll();
-    res.json(budgets);
+    const year = new Date().getFullYear();
+    const budget = await Budget.findOne({ where: { year } });
+
+    if (!budget) {
+      return res.status(404).json({ message: "ไม่พบงบประมาณของปีนี้" });
+    }
+
+    res.json([budget]); // ส่งเป็น array เพื่อให้ frontend ใช้ data[0] ต่อได้
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch budgets", error: err.message });
+    console.error("Budget GET Error:", err);
+    res.status(500).json({ message: "Failed to fetch budget", error: err.message });
   }
 };
+
 
 // POST เพิ่มงบใหม่
 exports.createBudget = async (req, res) => {

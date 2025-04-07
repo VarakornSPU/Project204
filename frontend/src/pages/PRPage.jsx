@@ -4,6 +4,7 @@ import axios from "axios";
 const PRPage = () => {
   const [items, setItems] = useState([]);
   const [user, setUser] = useState(null);
+  const [budget, setBudget] = useState({ initial_amount: 0, used_amount: 0 });
   const [form, setForm] = useState({
     pr_number: "",
     created_date: "",
@@ -19,6 +20,7 @@ const PRPage = () => {
     fetchItems();
     fetchUser();
     generatePrNumber();
+    fetchBudget();
   }, []);
 
   const fetchItems = async () => {
@@ -33,6 +35,18 @@ const PRPage = () => {
       headers: { Authorization: `Bearer ${token}` },
     });
     setUser(res.data);
+  };
+
+  const fetchBudget = async () => {
+    const res = await axios.get("/api/budgets", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const raw = res.data[0];
+    setBudget({
+      ...raw,
+      initial_amount: parseFloat(raw.initial_amount),
+      used_amount: parseFloat(raw.used_amount),
+    });
   };
 
   const generatePrNumber = async () => {
@@ -75,6 +89,16 @@ const PRPage = () => {
     const hasEmpty = preparedItems.some((i) => !i.item_id);
     if (hasEmpty) return alert("กรุณาเลือกรายการสินค้าให้ครบ");
 
+    const totalAmount = preparedItems.reduce(
+      (sum, i) => sum + i.unit_price * i.quantity,
+      0
+    );
+
+    const remaining = budget.initial_amount - budget.used_amount;
+    if (totalAmount > remaining) {
+      return alert("❌ งบประมาณคงเหลือไม่เพียงพอ");
+    }
+
     try {
       const res = await axios.post(
         "/api/pr",
@@ -87,7 +111,7 @@ const PRPage = () => {
         }
       );
 
-      alert("สร้างใบขอซื้อสำเร็จ");
+      alert("✅ สร้างใบขอซื้อสำเร็จ");
       setLatestPR(res.data);
       setForm({
         pr_number: "",
@@ -97,15 +121,29 @@ const PRPage = () => {
         items: [{ item_id: "", quantity: 1 }],
       });
       generatePrNumber();
+      fetchBudget();
     } catch (err) {
       console.error(err);
-      alert("ไม่สามารถสร้าง PR ได้");
+      if (err.response?.data?.message?.includes("งบประมาณ")) {
+        alert("❌ " + err.response.data.message);
+      } else {
+        alert("ไม่สามารถสร้าง PR ได้");
+      }
     }
   };
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">สร้างใบขอซื้อ (Purchase Request)</h2>
+
+      <div className="mb-4 p-3 bg-gray-100 rounded">
+        <p>
+          💰 <strong>งบประมาณ:</strong> {new Date().getFullYear()} | รวม: ฿
+          {budget.initial_amount.toFixed(2)} | ใช้ไป: ฿
+          {budget.used_amount.toFixed(2)} | คงเหลือ: ฿
+          {(budget.initial_amount - budget.used_amount).toFixed(2)}
+        </p>
+      </div>
 
       <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>

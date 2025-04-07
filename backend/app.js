@@ -28,6 +28,7 @@ const financeRoutes = require('./routes/finance.routes');
 const managementRoutes = require('./routes/management.routes');
 const itRoutes = require('./routes/it.routes');
 const roleRoutes = require('./routes/role.routes');
+const budgetRoutes = require('./routes/budget.routes');
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use('/api/finance', financeRoutes);
 app.use('/api/management', managementRoutes);
 app.use('/api/it', itRoutes);
 app.use('/api/roles', roleRoutes);
+app.use("/api/budgets", budgetRoutes);
 
 
 // ✅ Root

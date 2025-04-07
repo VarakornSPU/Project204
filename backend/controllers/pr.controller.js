@@ -1,7 +1,7 @@
 const db = require("../models");
-const { PurchaseRequest, PRDetail, Item, User } = db;
+const { PurchaseRequest, PRDetail, Item, User, Budget } = db;
 
-// ✅ สร้างใบขอซื้อ PR
+// ✅ สร้างใบขอซื้อ PR พร้อมตรวจสอบงบรวมของบริษัท
 exports.createPR = async (req, res) => {
   try {
     const { pr_number, created_date, description, required_date, items } = req.body;
@@ -11,6 +11,15 @@ exports.createPR = async (req, res) => {
       (sum, item) => sum + item.quantity * item.unit_price,
       0
     );
+
+    const year = new Date(created_date).getFullYear();
+    const budget = await Budget.findOne({ where: { year } });
+    if (!budget) {
+      return res.status(400).json({ message: "ยังไม่ได้ตั้งค่างบประมาณของปีนี้" });
+    }
+    if (parseFloat(budget.used_amount) + total_amount > parseFloat(budget.initial_amount)) {
+      return res.status(400).json({ message: "งบประมาณบริษัทไม่เพียงพอ" });
+    }
 
     const pr = await PurchaseRequest.create({
       pr_number,
@@ -46,7 +55,7 @@ exports.createPR = async (req, res) => {
     res.status(201).json(fullPR);
   } catch (error) {
     console.error("Create PR Error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: error.message || "Internal Server Error" });
   }
 };
 
@@ -156,28 +165,6 @@ exports.getApprovedPRs = async (req, res) => {
   }
 };
 
-// ✅ GET PR ที่อนุมัติแล้ว และยังไม่มี PO
-exports.getAvailablePRsForPO = async (req, res) => {
-  try {
-    const approvedPRs = await db.PurchaseRequest.findAll({
-      where: { status: 'approved' },
-      include: [
-        {
-          model: db.PurchaseOrder,
-          required: false, // left join
-        },
-      ],
-    });
-
-    const availablePRs = approvedPRs.filter(pr => !pr.PurchaseOrder);
-    res.json(availablePRs);
-  } catch (err) {
-    console.error('[GET AVAILABLE PRs]', err);
-    res.status(500).json({ message: 'Failed to fetch available PRs' });
-  }
-};
-
-// ✅ GET PR ที่อนุมัติแล้ว และยังไม่มี PO
 exports.getAvailablePRsForPO = async (req, res) => {
   try {
     const prs = await db.PurchaseRequest.findAll({
@@ -185,7 +172,8 @@ exports.getAvailablePRsForPO = async (req, res) => {
       include: [
         {
           model: db.PurchaseOrder,
-          required: false, // LEFT JOIN
+          as: 'purchase_order', // ✅ ต้องใส่ alias ให้ตรงกับ model
+          required: false,
         },
         {
           model: db.User,
@@ -201,13 +189,12 @@ exports.getAvailablePRsForPO = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    // filter PR ที่ยังไม่มี PO
-    const available = prs.filter(pr => !pr.PurchaseOrder);
+    // ✅ ใช้ alias 'purchase_order'
+    const available = prs.filter(pr => !pr.purchase_order);
     res.json(available);
   } catch (err) {
     console.error('[GET AVAILABLE PRs]', err);
     res.status(500).json({ message: 'Failed to fetch available PRs' });
   }
 };
-
 

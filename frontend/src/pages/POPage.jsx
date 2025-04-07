@@ -15,34 +15,52 @@ export default function POPage() {
   const [poSubject, setPoSubject] = useState("");
   const [requiredDate, setRequiredDate] = useState("");
   const [prNumber, setPrNumber] = useState("");
+  const [budget, setBudget] = useState({ initial_amount: 0, used_amount: 0 });
 
   useEffect(() => {
-    const fetchData = async () => {
-      const token = localStorage.getItem("token");
-      try {
-        const [vendorRes, prRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/vendors", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get("http://localhost:5000/api/pr/available-for-po", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-        setVendors(vendorRes.data);
-        setPRs(prRes.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
     fetchData();
+    fetchBudget();
   }, []);
+
+  const fetchData = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const [vendorRes, prRes] = await Promise.all([
+        axios.get("/api/vendors", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get("/api/pr/available-for-po", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+      setVendors(vendorRes.data);
+      setPRs(prRes.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchBudget = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get("/api/budgets", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const raw = res.data[0];
+      setBudget({
+        ...raw,
+        initial_amount: parseFloat(raw.initial_amount),
+        used_amount: parseFloat(raw.used_amount),
+      });
+    } catch (err) {
+      console.error("Failed to fetch budget", err);
+    }
+  };
 
   const handleSelectPR = (e) => {
     const prId = e.target.value;
     setSelectedPR(prId);
     setReferenceNo(`PO${Date.now()}`);
-
-    // clear all relevant fields
     setPoSubject("");
     setRequiredDate("");
     setPrNumber("");
@@ -54,9 +72,7 @@ export default function POPage() {
       setRequiredDate(pr.required_date);
       setPrNumber(pr.pr_number);
       const poItems = pr.pr_details.map((detail) => ({
-        description: `${detail.item?.name || ""} - ${
-          detail.item?.description || ""
-        }`.trim(),
+        description: `${detail.item?.name || ""} - ${detail.item?.description || ""}`.trim(),
         unit: detail.item?.unit || "",
         unit_price: parseFloat(detail.unit_price),
         quantity: detail.quantity,
@@ -69,16 +85,8 @@ export default function POPage() {
   const handleSelectVendor = (e) => {
     const id = e.target.value;
     setVendorId(id);
-    if (!id) {
-      setVendorContact("");
-      return;
-    }
     const vendor = vendors.find((v) => v.id === parseInt(id));
-    if (vendor) {
-      setVendorContact(vendor.contact);
-    } else {
-      setVendorContact("");
-    }
+    setVendorContact(vendor?.contact || "");
   };
 
   const handleSubmit = async (e) => {
@@ -86,26 +94,25 @@ export default function POPage() {
     const token = localStorage.getItem("token");
 
     if (!selectedPR || !vendorId || !paymentTerms || items.length === 0) {
-      alert("❌ กรุณากรอกข้อมูลให้ครบถ้วน");
-      return;
+      return alert("❌ กรุณากรอกข้อมูลให้ครบถ้วน");
     }
 
     const hasInvalidItem = items.some(
-      (i) =>
-        !i.description ||
-        !i.unit ||
-        i.unit_price <= 0 ||
-        i.quantity <= 0 ||
-        i.amount <= 0
+      (i) => !i.description || !i.unit || i.unit_price <= 0 || i.quantity <= 0 || i.amount <= 0
     );
     if (hasInvalidItem) {
-      alert("❌ รายการสินค้าไม่ถูกต้อง");
-      return;
+      return alert("❌ รายการสินค้าไม่ถูกต้อง");
+    }
+
+    const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+    const remaining = budget.initial_amount - budget.used_amount;
+    if (totalAmount > remaining) {
+      return alert("❌ งบประมาณคงเหลือไม่เพียงพอสำหรับการสร้าง PO");
     }
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/po",
+        "/api/po",
         {
           pr_id: parseInt(selectedPR),
           vendor_id: parseInt(vendorId),
@@ -118,7 +125,7 @@ export default function POPage() {
 
       alert(`✅ PO created: ${res.data.reference_no}`);
 
-      // ✅ Reset form หลัง submit สำเร็จ
+      // Reset form
       setSelectedPR(null);
       setVendorId("");
       setVendorContact("");
@@ -128,57 +135,41 @@ export default function POPage() {
       setPoSubject("");
       setRequiredDate("");
       setPrNumber("");
+      fetchBudget();
 
-      // ✅ รีโหลด PR ที่ยังไม่ถูกใช้
-      const updatedPRs = await axios.get(
-        "http://localhost:5000/api/pr/available-for-po",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const updatedPRs = await axios.get("/api/pr/available-for-po", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setPRs(updatedPRs.data);
     } catch (err) {
       console.error(err);
-      alert(
-        `❌ Failed to create PO: ${
-          err.response?.data?.message || "Unknown error"
-        }`
-      );
+      alert(`❌ Failed to create PO: ${err.response?.data?.message || "Unknown error"}`);
     }
   };
 
   return (
     <>
       <h1 className="po-title">Create Purchase Order (PO)</h1>
+      <div className="mb-4 p-3 bg-gray-100 rounded">
+        <p>
+          💰 <strong>งบประมาณ:</strong> {new Date().getFullYear()} | รวม: ฿
+          {budget.initial_amount.toFixed(2)} | ใช้ไป: ฿
+          {budget.used_amount.toFixed(2)} | คงเหลือ: ฿
+          {(budget.initial_amount - budget.used_amount).toFixed(2)}
+        </p>
+      </div>
       <div className="po-container">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="receipt-container">
             <div className="receipt-header">🛒 Purchase Order</div>
-            <p>
-              <strong>PO Date:</strong> {poDate}
-            </p>
-            <p>
-              <strong>Vendor:</strong>{" "}
-              {vendors.find((v) => v.id === parseInt(vendorId))?.name || "-"}
-            </p>
-            <p>
-              <strong>Vendor Contact:</strong> {vendorContact}
-            </p>
-            <p>
-              <strong>Subject:</strong> {poSubject}
-            </p>
-            <p>
-              <strong>Required Date:</strong> {requiredDate}
-            </p>
-            <p>
-              <strong>Referenced PR No:</strong> {prNumber}
-            </p>
-            <p>
-              <strong>Payment Terms:</strong> {paymentTerms}
-            </p>
-            <p>
-              <strong>Reference No:</strong> {referenceNo}
-            </p>
+            <p><strong>PO Date:</strong> {poDate}</p>
+            <p><strong>Vendor:</strong> {vendors.find((v) => v.id === parseInt(vendorId))?.name || "-"}</p>
+            <p><strong>Vendor Contact:</strong> {vendorContact}</p>
+            <p><strong>Subject:</strong> {poSubject}</p>
+            <p><strong>Required Date:</strong> {requiredDate}</p>
+            <p><strong>Referenced PR No:</strong> {prNumber}</p>
+            <p><strong>Payment Terms:</strong> {paymentTerms}</p>
+            <p><strong>Reference No:</strong> {referenceNo}</p>
 
             <table className="receipt-table">
               <thead>
@@ -204,16 +195,11 @@ export default function POPage() {
             </table>
 
             <div className="receipt-total">
-              Total: ฿
-              {items.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
+              Total: ฿{items.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
             </div>
           </div>
 
-          <select
-            className="border p-2 w-full"
-            value={selectedPR || ""}
-            onChange={handleSelectPR}
-          >
+          <select className="border p-2 w-full" value={selectedPR || ""} onChange={handleSelectPR}>
             <option value="">📋 Select Approved PR</option>
             {prs.map((pr) => (
               <option key={pr.id} value={pr.id}>
@@ -222,34 +208,21 @@ export default function POPage() {
             ))}
           </select>
 
-          <select
-            className="border p-2 w-full"
-            value={vendorId}
-            onChange={handleSelectVendor}
-          >
+          <select className="border p-2 w-full" value={vendorId} onChange={handleSelectVendor}>
             <option value="">🏢 Select Vendor</option>
             {vendors.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.name}
-              </option>
+              <option key={v.id} value={v.id}>{v.name}</option>
             ))}
           </select>
 
-          <select
-            className="border p-2 w-full"
-            value={paymentTerms}
-            onChange={(e) => setPaymentTerms(e.target.value)}
-          >
+          <select className="border p-2 w-full" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)}>
             <option value="">💳 Payment Terms</option>
             <option value="เครดิต 30 วัน">เครดิต 30 วัน</option>
             <option value="จ่ายทันที">จ่ายทันที</option>
             <option value="เช็ควาง 60 วัน">เช็ควาง 60 วัน</option>
           </select>
 
-          <button
-            type="submit"
-            className="po-submit bg-blue-600 text-white px-4 py-2 rounded"
-          >
+          <button type="submit" className="po-submit bg-blue-600 text-white px-4 py-2 rounded">
             📝 Submit PO
           </button>
         </form>
