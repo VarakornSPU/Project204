@@ -1,94 +1,77 @@
-/* ======= ตั้งค่าฟอนต์และพื้นหลังโดยรวม ======= */
+/* ======= ฟอนต์และพื้นหลังโดยรวม ======= */
 body {
-  font-family: "Poppins", sans-serif;
-  background-color: #f9fafb;
+  background-color: #f3f4f6;
   color: #333;
   margin: 0;
   padding: 0;
+  line-height: 1.6;
 }
 
 /* ======= หัวข้อใหญ่ ======= */
-.pr-title {
-  font-size: 1.8rem;
-  font-weight: bold;
+/* .title {
+  background-color: #f3f4f6;
+  font-size: 2rem;
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 20px;
+  padding: 16px 0;
   margin-left: 260px;
-  color: #222;
-}
+  margin-bottom: 24px;
+} */
 
 /* ======= กล่องเนื้อหา ======= */
 .pr-container {
   width: 80%;
   max-width: 900px;
   margin-left: 260px;
-  padding: 24px;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 48px 32px 32px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   position: relative;
 }
 
-/* ======= ตาราง ======= */
-.pr-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  table-layout: fixed;
-}
+/* .pr-container-scroll {
+  max-height: calc(56px * 5);
+  overflow-y: scroll;
+  max-height: calc(100vh - 300px);
+} */
 
-/* 🔹 หัวตารางล็อกด้านบน */
-.pr-table thead {
+/* ======= หัวข้อย่อยของกล่อง ======= */
+.pr-header {
   position: sticky;
   top: 0;
-  background: #ff7e5f;
+  background: linear-gradient(90deg, #ff7e5f, #feb47b);
   color: white;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 12px 20px;
+  border-radius: 12px 12px 0 0;
   z-index: 10;
 }
 
-/* 🔹 จำกัดความสูงของ tbody */
-.pr-table tbody {
-  display: block;
-  max-height: 260px; /* 50px x 5 แถว */
-  overflow-y: auto;
+/* ======= Input & Select ======= */
+.pr-select,
+.pr-input {
   width: 100%;
-}
-
-.pr-table tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
-}
-
-.pr-table th,
-.pr-table td {
-  padding: 14px;
-  text-align: center;
-  font-size: 0.95rem;
-  height: 50px;
-  border-bottom: 1px solid #e1e4e8;
-}
-
-/* ======= ปรับขนาด input และ select ======= */
-.pr-table td select,
-.pr-table td input {
-  width: 100%;
-  padding: 8px;
+  padding: 10px 12px;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
-  text-align: center;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 1rem;
   outline: none;
-  transition: all 0.2s ease;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+  background-color: #f9fafb;
+  margin-bottom: 16px;
 }
 
-.pr-table td select:focus,
-.pr-table td input:focus {
+.pr-select:focus,
+.pr-input:focus {
   border-color: #ff7e5f;
-  box-shadow: 0 0 4px rgba(255, 126, 95, 0.3);
+  box-shadow: 0 0 6px rgba(255, 126, 95, 0.3);
+}
+
+.pr-select:hover {
+  cursor: pointer;
 }
 
 /* ======= Total Amount ======= */
@@ -96,41 +79,44 @@ body {
   text-align: right;
   font-size: 1.1rem;
   font-weight: bold;
-  color: #000;
-  margin-top: 10px;
+  color: #111827;
+  margin-top: 12px;
   padding-right: 10px;
-  position: relative;
 }
 
-/* ขยับ total amount ลงตามแถว */
+/* ขยับช่องว่างของ total amount */
 .dynamic-spacing {
-  height: auto;
   min-height: 30px;
   transition: all 0.3s ease;
 }
 
-/* ======= ปุ่ม ======= */
+/* ======= ปุ่มต่าง ๆ ======= */
 .button-container {
-  position: sticky; /* ล็อคปุ่มไว้ใต้สุดของ container */
+  position: sticky;
   bottom: 0;
   left: 0;
-  width: calc(80% - 10px); /* คำนวณระยะจาก Sidebar */
   max-width: 900px;
-  margin-left: 260px; /* เว้นจาก Sidebar */
-  padding: 12px;
+  padding: 16px;
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
 }
 
 .pr-button {
-  padding: 10px 18px;
+  padding: 12px 20px;
   font-size: 1rem;
-  font-weight: 500;
-  border-radius: 8px;
+  font-weight: 600;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.3s ease, transform 0.1s ease;
   border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.pr-button:active {
+  transform: scale(0.97);
 }
 
 /* ปุ่มเพิ่มรายการ */
@@ -153,39 +139,18 @@ body {
   background: #1e7e34;
 }
 
-.required-date-wrapper {
-  margin-top: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #333;
-}
-
-.required-date-input {
-  padding: 6px 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.required-date-input:focus {
-  border-color: #ff7e5f;
-  box-shadow: 0 0 4px rgba(255, 126, 95, 0.3);
-}
-
 /* ======= Responsive ======= */
 @media (max-width: 768px) {
-  .pr-container {
+  .pr-container,
+  .pr-title {
     width: 95%;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .button-container {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
   }
 
   .pr-button {

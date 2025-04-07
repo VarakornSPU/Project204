@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "./POPage.css";
+import "../app.css"
 
 export default function POPage() {
   const [vendors, setVendors] = useState([]);
@@ -149,15 +150,7 @@ export default function POPage() {
 
   return (
     <>
-      <h1 className="po-title">Create Purchase Order (PO)</h1>
-      <div className="mb-4 p-3 bg-gray-100 rounded">
-        <p>
-          💰 <strong>งบประมาณ:</strong> {new Date().getFullYear()} | รวม: ฿
-          {budget.initial_amount.toFixed(2)} | ใช้ไป: ฿
-          {budget.used_amount.toFixed(2)} | คงเหลือ: ฿
-          {(budget.initial_amount - budget.used_amount).toFixed(2)}
-        </p>
-      </div>
+      <h1 className="title">Create Purchase Order (PO)</h1>
       <div className="po-container">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="receipt-container">
@@ -170,6 +163,14 @@ export default function POPage() {
             <p><strong>Referenced PR No:</strong> {prNumber}</p>
             <p><strong>Payment Terms:</strong> {paymentTerms}</p>
             <p><strong>Reference No:</strong> {referenceNo}</p>
+        <div className="po-input mb-4 p-3 bg-gray-100 rounded">
+        <p>
+          💰 <strong>งบประมาณ:</strong> {new Date().getFullYear()} | รวม: ฿
+          {budget.initial_amount.toFixed(2)} | ใช้ไป: ฿
+          {budget.used_amount.toFixed(2)} | คงเหลือ: ฿
+          {(budget.initial_amount - budget.used_amount).toFixed(2)}
+        </p>
+        </div>
 
             <table className="receipt-table">
               <thead>
@@ -199,8 +200,8 @@ export default function POPage() {
             </div>
           </div>
 
-          <select className="border p-2 w-full" value={selectedPR || ""} onChange={handleSelectPR}>
-            <option value="">📋 Select Approved PR</option>
+          <select className="po-select border p-2 w-full" value={selectedPR || ""} onChange={handleSelectPR}>
+            <option value="">📋 Select Approved PR<span className="po-required text-red-500">*</span></option>
             {prs.map((pr) => (
               <option key={pr.id} value={pr.id}>
                 {pr.pr_number} - {pr.description}
@@ -208,22 +209,22 @@ export default function POPage() {
             ))}
           </select>
 
-          <select className="border p-2 w-full" value={vendorId} onChange={handleSelectVendor}>
-            <option value="">🏢 Select Vendor</option>
+          <select className="po-select border p-2 w-full" value={vendorId} onChange={handleSelectVendor}>
+            <option value="">🏢 Select Vendor<span className="po-required text-red-500">*</span></option>
             {vendors.map((v) => (
               <option key={v.id} value={v.id}>{v.name}</option>
             ))}
           </select>
 
-          <select className="border p-2 w-full" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)}>
-            <option value="">💳 Payment Terms</option>
+          <select className="po-select border p-2 w-full" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)}>
+            <option value="">💳 Payment Terms<span className="po-required text-red-500">*</span></option>
             <option value="เครดิต 30 วัน">เครดิต 30 วัน</option>
             <option value="จ่ายทันที">จ่ายทันที</option>
             <option value="เช็ควาง 60 วัน">เช็ควาง 60 วัน</option>
           </select>
 
-          <button type="submit" className="po-submit bg-blue-600 text-white px-4 py-2 rounded">
-            📝 Submit PO
+          <button type="submit" className="po-submit  text-white px-4 py-2 rounded">
+            📝 ยืนยัน
           </button>
         </form>
       </div>

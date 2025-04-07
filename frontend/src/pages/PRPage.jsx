@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "../pages/PRPage.css";
+import "../app.css"
 
 const PRPage = () => {
   const [items, setItems] = useState([]);
@@ -133,10 +135,10 @@ const PRPage = () => {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">สร้างใบขอซื้อ (Purchase Request)</h2>
-
-      <div className="mb-4 p-3 bg-gray-100 rounded">
+    <>
+    <h2 className="title">สร้างใบขอซื้อ (Purchase Request)</h2>
+    <div className="pr-container">
+      <div className="pr-input mb-4 p-3 bg-gray-100 rounded">
         <p>
           💰 <strong>งบประมาณ:</strong> {new Date().getFullYear()} | รวม: ฿
           {budget.initial_amount.toFixed(2)} | ใช้ไป: ฿
@@ -150,7 +152,7 @@ const PRPage = () => {
           <label className="block font-medium mb-1">เลขที่ใบขอซื้อ</label>
           <input
             type="text"
-            className="w-full border p-2 bg-gray-100"
+            className="pr-input w-full border p-2 bg-gray-100"
             value={form.pr_number}
             readOnly
           />
@@ -159,16 +161,16 @@ const PRPage = () => {
           <label className="block font-medium mb-1">ผู้จัดทำ</label>
           <input
             type="text"
-            className="w-full border p-2 bg-gray-100"
+            className="pr-input w-full border p-2 bg-gray-100"
             value={user ? `${user.first_name} ${user.last_name}` : ""}
             readOnly
           />
         </div>
         <div>
-          <label className="block font-medium mb-1">วันที่</label>
+          <label className="block font-medium mb-1">วันที่<span className="text-red-500">*</span></label>
           <input
             type="date"
-            className="w-full border p-2"
+            className="pr-select w-full border p-2"
             value={form.created_date}
             onChange={(e) => setForm({ ...form, created_date: e.target.value })}
           />
@@ -179,42 +181,42 @@ const PRPage = () => {
         <label className="block font-medium mb-1">คำอธิบายหัวรายการ</label>
         <input
           type="text"
-          className="w-full border p-2"
+          className="pr-select w-full border p-2"
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
       </div>
 
       <div className="mb-6">
-        <label className="block font-medium mb-1">วันที่ต้องการ</label>
+        <label className="block font-medium mb-1">วันที่ต้องการ <span className="text-red-500">*</span></label>
         <input
           type="date"
-          className="w-full border p-2"
+          className="pr-select w-full border p-2"
           value={form.required_date}
           onChange={(e) => setForm({ ...form, required_date: e.target.value })}
         />
       </div>
 
-      <h3 className="font-semibold text-lg mb-2">รายการพัสดุ</h3>
-      <div className="grid grid-cols-6 gap-2 font-bold text-sm bg-gray-100 p-2 rounded mb-2">
+      <h3 className="font-semibold text-lg mb-2">รายการพัสดุ<span className="text-red-500">*</span></h3>
+      <div className="pr-header grid grid-cols-6 gap-2 font-bold text-sm bg-gray-100 p-2 rounded mb-2">
         <div>ชื่อสินค้า</div>
         <div>หน่วยนับ</div>
         <div>จำนวน</div>
         <div>ราคาต่อหน่วย</div>
         <div>จำนวนเงิน</div>
-        <div></div>
       </div>
 
+      <div className="pr-container-scroll">
       {form.items.map((row, index) => {
         const selected = items.find((i) => i.id === Number(row.item_id));
         return (
           <div key={index} className="grid grid-cols-6 gap-2 mb-2 items-center">
             <select
-              className="border p-2"
+              className="pr-select border p-2"
               value={row.item_id}
               onChange={(e) => handleChange(index, "item_id", e.target.value)}
             >
-              <option value="">-- เลือกสินค้า --</option>
+              <option value="">เลือกสินค้า</option>
               {items.map((i) => (
                 <option key={i.id} value={i.id}>
                   {i.name}
@@ -224,7 +226,7 @@ const PRPage = () => {
 
             <input
               type="text"
-              className="border p-2 bg-gray-100"
+              className="pr-input border p-2 bg-gray-100"
               readOnly
               value={selected?.unit || ""}
               placeholder="หน่วย"
@@ -232,7 +234,7 @@ const PRPage = () => {
 
             <input
               type="number"
-              className="border p-2"
+              className="pr-select border p-2"
               value={row.quantity}
               placeholder="จำนวน"
               onChange={(e) => handleChange(index, "quantity", e.target.value)}
@@ -240,7 +242,7 @@ const PRPage = () => {
 
             <input
               type="text"
-              className="border p-2 bg-gray-100"
+              className="pr-input border p-2 bg-gray-100"
               readOnly
               value={selected?.unit_price || ""}
               placeholder="ราคาต่อหน่วย"
@@ -248,7 +250,7 @@ const PRPage = () => {
 
             <input
               type="text"
-              className="border p-2 bg-gray-100"
+              className="pr-input border p-2 bg-gray-100"
               readOnly
               value={
                 selected
@@ -266,28 +268,31 @@ const PRPage = () => {
           </div>
         );
       })}
+      </div>
 
+      <div className="button-container">
       <button
         onClick={addRow}
-        className="bg-gray-200 px-3 py-1 rounded mb-4 mt-2"
+        className="add-item bg-gray-200 text-white px-4 py-2 rounded"
       >
-        + เพิ่มรายการ
+      เพิ่มรายการ
       </button>
+      <button
+        onClick={handleSubmit}
+        className="submit-pr bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        บันทึก
+      </button>
+      </div>
 
-      <p className="text-right font-bold text-lg mb-4">
+      <p className="total-amount text-right font-bold text-lg mb-4">
         รวมทั้งสิ้น: {form.items.reduce((sum, row) => {
           const selected = items.find((i) => i.id === Number(row.item_id));
           return sum + (selected ? row.quantity * selected.unit_price : 0);
         }, 0).toFixed(2)} บาท
       </p>
-
-      <button
-        onClick={handleSubmit}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        บันทึกใบขอซื้อ
-      </button>
     </div>
+    </>
   );
 };
 
