@@ -22,7 +22,7 @@ export default function Login() {
   };
 
   return (
-    <div className="container">
+    <div className="">
       <form onSubmit={handleLogin} className="login-form">
         <h2>LOGIN</h2>
         <input className="input-field" type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />

@@ -273,7 +273,7 @@ const PRPage = () => {
       <div className="button-container">
       <button
         onClick={addRow}
-        className="add-item bg-gray-200 text-white px-4 py-2 rounded"
+        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-2 shadow-lg transition duration-300"
       >
       เพิ่มรายการ
       </button>

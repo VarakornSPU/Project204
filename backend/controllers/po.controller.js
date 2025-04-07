@@ -60,9 +60,6 @@ exports.createPO = async (req, res) => {
       });
     }
 
-    budget.used_amount += total_amount;
-    await budget.save();
-
     res.status(201).json({
       message: 'PO created successfully',
       po_id: po.id,
@@ -82,7 +79,7 @@ exports.getAllPOs = async (req, res) => {
   try {
     const pos = await PurchaseOrder.findAll({
       include: [{ model: Vendor, attributes: ['name'] }],
-      order: [['createdAt', 'DESC']],
+      order: [['id', 'DESC']],
     });
 
     const formatted = pos.map(po => ({
@@ -109,6 +106,10 @@ exports.getPOById = async (req, res) => {
         {
           model: POItem,
           as: 'items',
+        },
+        {
+          model: Vendor, // ✅ เพิ่มตรงนี้
+          attributes: ['name'],
         },
       ],
     });

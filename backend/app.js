@@ -30,6 +30,8 @@ const itRoutes = require('./routes/it.routes');
 const roleRoutes = require('./routes/role.routes');
 const budgetRoutes = require('./routes/budget.routes');
 
+
+
 const app = express();
 
 // ✅ Middleware
@@ -62,6 +64,8 @@ app.use('/api/management', managementRoutes);
 app.use('/api/it', itRoutes);
 app.use('/api/roles', roleRoutes);
 app.use("/api/budgets", budgetRoutes);
+const receiptRoutes = require('./routes/receipt.routes'); // ✅ เพิ่มตรงนี้
+receiptRoutes(app); // ✅ แล้วเรียกใช้แบบนี้
 
 
 // ✅ Root
