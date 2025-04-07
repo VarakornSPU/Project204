@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const BudgetPage = () => {
   const [budget, setBudget] = useState(null);
   const [error, setError] = useState(null);
-  const [poList, setPoList] = useState([]);
+  const [payments, setPayments] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,26 +25,31 @@ const BudgetPage = () => {
       }
     };
 
-    const fetchPOList = async () => {
+    const fetchPayments = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('/api/po/used', {
+        const response = await axios.get('/api/budgets/report', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setPoList(response.data);
+        setPayments(response.data);
       } catch (err) {
-        console.error('Error fetching PO list:', err);
+        console.error('Error fetching payments:', err);
       }
     };
 
     fetchBudget();
-    fetchPOList();
+    fetchPayments();
   }, []);
 
   const exportToCSV = () => {
     const csvContent = [
-      ['เลขที่ PO', 'วันที่', 'ผู้ขาย', 'จำนวนเงิน'],
-      ...poList.map(po => [po.po_number, po.date, po.vendor_name, po.total_amount])
+      ['เลขที่ PO', 'วันที่ชำระ', 'ผู้ขาย', 'จำนวนเงิน'],
+      ...payments.map(p => [
+        p.po?.reference_no || `PO#${p.po_id}`,
+        new Date(p.payment_date).toLocaleDateString(),
+        p.vendor?.name || '-',
+        p.amount
+      ])
     ].map(row => row.join(",")).join("\n");
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -88,7 +93,7 @@ const BudgetPage = () => {
       </Card>
 
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-xl font-semibold">📋 รายการใบสั่งซื้อ (PO) ที่ใช้งบ</h2>
+        <h2 className="text-xl font-semibold">💸 รายการชำระเงินที่ใช้งบประมาณ</h2>
         <button onClick={exportToCSV} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Export CSV</button>
       </div>
 
@@ -97,23 +102,23 @@ const BudgetPage = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="p-2 border">เลขที่ PO</th>
-              <th className="p-2 border">วันที่</th>
+              <th className="p-2 border">วันที่ชำระ</th>
               <th className="p-2 border">ผู้ขาย</th>
               <th className="p-2 border">จำนวนเงิน</th>
             </tr>
           </thead>
           <tbody>
-            {poList.map((po, index) => (
+            {payments.map((pmt, index) => (
               <tr key={index} className="text-center">
-                <td className="p-2 border">{po.po_number}</td>
-                <td className="p-2 border">{new Date(po.date).toLocaleDateString()}</td>
-                <td className="p-2 border">{po.vendor_name}</td>
-                <td className="p-2 border">{parseFloat(po.total_amount).toLocaleString()} บาท</td>
+                <td className="p-2 border">{pmt.po?.reference_no || `PO#${pmt.po_id}`}</td>
+                <td className="p-2 border">{new Date(pmt.payment_date).toLocaleDateString()}</td>
+                <td className="p-2 border">{pmt.vendor?.name || '-'}</td>
+                <td className="p-2 border">{parseFloat(pmt.amount).toLocaleString()} บาท</td>
               </tr>
             ))}
-            {poList.length === 0 && (
+            {payments.length === 0 && (
               <tr>
-                <td colSpan="4" className="p-4 text-center text-gray-500">ไม่มีข้อมูลใบสั่งซื้อ</td>
+                <td colSpan="4" className="p-4 text-center text-gray-500">ไม่มีข้อมูลการชำระเงิน</td>
               </tr>
             )}
           </tbody>

@@ -1,5 +1,7 @@
 const db = require("../models");
 const Budget = db.Budget;
+const Payment = db.Payment; // ✅ เพิ่มให้ถูกต้อง
+const { Op } = require("sequelize");
 
 // GET งบทั้งหมด
 exports.getAllBudgets = async (req, res) => {
@@ -17,7 +19,6 @@ exports.getAllBudgets = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch budget", error: err.message });
   }
 };
-
 
 // POST เพิ่มงบใหม่
 exports.createBudget = async (req, res) => {
@@ -44,4 +45,22 @@ exports.updateUsedAmount = async (department, year, amount) => {
   }
   budget.used_amount += amount;
   await budget.save();
+};
+
+// GET รายงานการใช้งบประมาณจาก payments
+exports.getBudgetReport = async (req, res) => {
+  try {
+    const payments = await Payment.findAll({
+      include: [
+        { model: db.PurchaseOrder, as: 'po' },
+        { model: db.Vendor, as: 'vendor' }
+      ],
+      order: [['payment_date', 'DESC']]
+    });
+
+    res.json(payments);
+  } catch (err) {
+    console.error('❌ Budget report error:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };

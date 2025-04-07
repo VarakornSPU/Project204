@@ -22,26 +22,23 @@ db.Payment = require('./payment.model')(sequelize, DataTypes);
 db.Receipt = require('./receipt.model')(sequelize, DataTypes);
 db.Invoice = require('./invoice.model')(sequelize, DataTypes);
 
-// Payment → PurchaseOrder
-db.Payment.belongsTo(db.PurchaseOrder, { foreignKey: 'po_id' });
-db.PurchaseOrder.hasMany(db.Payment, { foreignKey: 'po_id' });
+// ✅ ความสัมพันธ์พร้อม alias (as) สำหรับ Payment
+db.Payment.belongsTo(db.PurchaseOrder, { foreignKey: 'po_id', as: 'po' });
+db.PurchaseOrder.hasMany(db.Payment, { foreignKey: 'po_id', as: 'payments' });
 
-// Payment → Invoice
-db.Payment.belongsTo(db.Invoice, { foreignKey: 'invoice_id' });
-db.Invoice.hasMany(db.Payment, { foreignKey: 'invoice_id' });
+db.Payment.belongsTo(db.Invoice, { foreignKey: 'invoice_id', as: 'invoice' });
+db.Invoice.hasMany(db.Payment, { foreignKey: 'invoice_id', as: 'payments' });
 
-// Payment → Vendor
-db.Payment.belongsTo(db.Vendor, { foreignKey: 'vendor_id' });
-db.Vendor.hasMany(db.Payment, { foreignKey: 'vendor_id' });
+db.Payment.belongsTo(db.Vendor, { foreignKey: 'vendor_id', as: 'vendor' });
+db.Vendor.hasMany(db.Payment, { foreignKey: 'vendor_id', as: 'payments' });
 
-// PO → Vendor
+// ✅ ความสัมพันธ์อื่นที่มีอยู่
 db.PurchaseOrder.belongsTo(db.Vendor, { foreignKey: 'vendor_id' });
 
-// Receipt → PO
 db.Receipt.belongsTo(db.PurchaseOrder, { foreignKey: 'po_id' });
 db.PurchaseOrder.hasMany(db.Receipt, { foreignKey: 'po_id' });
 
-// เรียก associate ถ้า model นั้นมี method associate
+// ✅ เรียก associate ถ้ามี method ในแต่ละ model
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
