@@ -2,6 +2,16 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
+// const router = express.Router();
+// const reportController = require('../controllers/report.controller');
+
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const bodyParser = require('body-parser');
+// const router = express.Router();
+// const reportController = require('../controllers/report.controller');
+// const { authJwt } = require('../middleware');
 require('dotenv').config();
 
 const { Pool } = require('pg'); // 👈 เพิ่ม
@@ -30,14 +40,21 @@ const itRoutes = require('./routes/it.routes');
 const roleRoutes = require('./routes/role.routes');
 const budgetRoutes = require('./routes/budget.routes');
 
-
-
 const app = express();
+
+// router.get('/print/:type/:id', [authJwt.verifyToken], reportController.printDocument);
+// router.get('/balance/:vendor_id', [authJwt.verifyToken], reportController.reportVendorBalance);
 
 // ✅ Middleware
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(morgan('dev'));
 app.use(bodyParser.json());
+
+// ✅ Middleware สำหรับ logging requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 // ✅ Middleware ใส่ db (ต้องมาก่อนใช้ controller)
 app.use((req, res, next) => {
@@ -52,11 +69,11 @@ app.use('/api/po', poRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/inventory', inventoryRoutes); // ใช้ req.db ตรงนี้
-app.use('/api/reports', reportRoutes);
+app.use('/api/report', reportRoutes);  // เปลี่ยนจาก /api/reports เป็น /api/report ให้ตรงกับ frontend
 app.use('/api/users', userRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/vendors', vendorRoutes);
-app.use('/api/auth', authRoutes);
+// ลบ app.use('/api/auth', authRoutes); ที่ซ้ำ
 app.use('/api/admin', adminRoutes);
 app.use('/api/procurement', procurementRoutes);
 app.use('/api/finance', financeRoutes);
@@ -64,9 +81,6 @@ app.use('/api/management', managementRoutes);
 app.use('/api/it', itRoutes);
 app.use('/api/roles', roleRoutes);
 app.use("/api/budgets", budgetRoutes);
-const receiptRoutes = require('./routes/receipt.routes'); // ✅ เพิ่มตรงนี้
-receiptRoutes(app); // ✅ แล้วเรียกใช้แบบนี้
-
 
 // ✅ Root
 app.get('/', (req, res) => res.send('✅ Purchase Management Backend Running'));
@@ -87,7 +101,6 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   },
   timezone: '+07:00',  // กำหนด timezone เป็น UTC+7 (เขตเวลาไทย)
 });
-
 
 // ปรับ db ใช้งาน Sequelize
 db.sequelize = sequelize;

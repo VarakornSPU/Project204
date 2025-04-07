@@ -1,35 +1,78 @@
+const db = require('../models');
 exports.printDocument = async (req, res) => {
-    const db = req.db;
-    const { type, id } = req.params;
-    try {
-      let result;
-      if (type === 'pr') {
-        result = await db.query('SELECT * FROM purchase_requests WHERE id = $1', [id]);
-      } else if (type === 'po') {
-        result = await db.query('SELECT * FROM purchase_orders WHERE id = $1', [id]);
-      } else if (type === 'asset') {
-        result = await db.query('SELECT * FROM assets WHERE id = $1', [id]);
-      } else if (type === 'stock') {
-        result = await db.query('SELECT * FROM stock_items WHERE id = $1', [id]);
-      } else {
-        return res.status(400).json({ message: 'Invalid document type' });
+  const { type, id } = req.params;
+
+  const getQuery = (type) => {
+    switch (type) {
+      case 'pr':
+        return {
+          table: 'PurchaseRequests',
+          where: 'pr_number = :id'
+        };
+      case 'po':
+        return {
+          table: 'PurchaseOrders',
+          where: 'reference_no = :id'
+        };
+      case 'asset':
+        return {
+          table: 'assets',
+          where: 'po_id = :id'
+        };
+      case 'stock':
+        return {
+          table: 'stock_items',
+          where: 'po_id = :id'
+        };
+      default:
+        return null;
+    }
+  };
+
+  try {
+    const queryData = getQuery(type);
+    if (!queryData) {
+      return res.status(400).json({ message: 'Invalid document type' });
+    }
+
+    const [results] = await db.sequelize.query(
+      `SELECT * FROM "${queryData.table}" WHERE ${queryData.where}`,
+      {
+        replacements: { id },
+        type: db.Sequelize.QueryTypes.SELECT
       }
-      res.json({ document: result.rows[0] });
-    } catch (err) {
-      res.status(500).json({ error: 'Failed to print document', detail: err });
+    );
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({ message: 'Document not found' });
     }
-  };
-  
-  exports.reportVendorBalance = async (req, res) => {
-    const db = req.db;
-    const { vendor_id } = req.params;
-    try {
-      const result = await db.query(
-        'SELECT SUM(amount) as total FROM payments WHERE vendor_id = $1 AND payment_date IS NULL',
-        [vendor_id]
-      );
-      res.json({ vendor_id, balance: result.rows[0].total });
-    } catch (err) {
-      res.status(500).json({ error: 'Failed to generate report', detail: err });
-    }
-  };
+
+    res.json({ document: results });
+  } catch (err) {
+    console.error('printDocument error:', err);
+    res.status(500).json({ error: 'Failed to print document', detail: err.message });
+  }
+};
+
+exports.reportVendorBalance = async (req, res) => {
+  const db = req.db;
+  const { vendor_id } = req.params;
+
+  try {
+    const result = await db.query(
+      `SELECT SUM(amount) AS total 
+       FROM payments 
+       WHERE vendor_id = $1 AND payment_date IS NULL`,
+      [vendor_id]
+    );
+
+    res.json({ 
+      vendor_id, 
+      balance: result.rows[0].total ?? 0 // กรณีไม่มีข้อมูลให้เป็น 0
+    });
+
+  } catch (err) {
+    console.error('reportVendorBalance error:', err);
+    res.status(500).json({ error: 'Failed to generate report', detail: err.message });
+  }
+};
