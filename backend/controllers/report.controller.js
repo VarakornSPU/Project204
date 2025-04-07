@@ -76,3 +76,32 @@ exports.reportVendorBalance = async (req, res) => {
     res.status(500).json({ error: 'Failed to generate report', detail: err.message });
   }
 };
+
+exports.listDocumentByType = async (req, res) => {
+  const { type } = req.params;
+
+  const tableMap = {
+    pr: { table: 'PurchaseRequests', field: 'pr_number' },
+    po: { table: 'PurchaseOrders', field: 'reference_no' },
+    asset: { table: 'assets', field: 'po_id' },
+    stock: { table: 'stock_items', field: 'po_id' },
+  };
+
+  const config = tableMap[type];
+  if (!config) {
+    return res.status(400).json({ message: 'Invalid document type' });
+  }
+
+  try {
+    const results = await db.sequelize.query(
+      `SELECT id, ${config.field} FROM "${config.table}" ORDER BY id DESC`,
+      {
+        type: db.Sequelize.QueryTypes.SELECT
+      }
+    );
+    res.json(results);
+  } catch (err) {
+    console.error('listDocumentByType error:', err);
+    res.status(500).json({ error: 'Failed to list documents', detail: err.message });
+  }
+};
