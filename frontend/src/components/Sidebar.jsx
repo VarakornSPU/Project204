@@ -11,6 +11,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem('role');   // ✅ ลบ role ด้วย
     navigate("/");
   };
 

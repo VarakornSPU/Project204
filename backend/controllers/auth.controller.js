@@ -1,8 +1,11 @@
 const db = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
 const User = db.User;
 const Role = db.Role;
+
+// ------------------ REGISTER ------------------
 
 exports.register = async (req, res) => {
   const { username, password, role_id, first_name, last_name } = req.body;
@@ -33,11 +36,17 @@ exports.register = async (req, res) => {
   }
 };
 
+// ------------------ LOGIN ------------------
+
 exports.login = async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ where: { username }, include: [{ model: Role, as: 'role' }] });
+    const user = await User.findOne({
+      where: { username },
+      include: [{ model: Role, as: 'role', attributes: ['name'] }],
+    });
+
     if (!user) return res.status(401).json({ message: 'User not found' });
 
     const match = await bcrypt.compare(password, user.password);
@@ -46,21 +55,30 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       {
         id: user.id,
-        role: user.role.name // ✅ Embed role name into token
+        role: user.role.name,
       },
       process.env.JWT_SECRET || 'default-secret',
       { expiresIn: '1d' }
     );
 
+    // ✅ ส่ง role เป็น string กลับให้ frontend
     res.json({
       token,
-      user: { id: user.id, username: user.username, role: user.role.name }
+      role: user.role.name, // 👈 สำคัญ! จะได้ใช้ localStorage.setItem('role', role) ได้
+      user: {
+        id: user.id,
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name,
+      },
     });
   } catch (err) {
     console.error('[LOGIN ERROR]', err);
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
 };
+
+// ------------------ GET ME ------------------
 
 exports.getMe = async (req, res) => {
   try {
@@ -76,7 +94,7 @@ exports.getMe = async (req, res) => {
       username: user.username,
       first_name: user.first_name,
       last_name: user.last_name,
-      role: user.role?.name,
+      role: user.role?.name || null,
     });
   } catch (err) {
     console.error('[GET USER ERROR]', err);

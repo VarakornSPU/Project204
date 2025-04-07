@@ -10,7 +10,7 @@ import RegisterAsset from './pages/RegisterAsset';
 import MakePayment from './pages/MakePayment';
 import ReportPage from './pages/ReportPage';
 import UserManagement from './pages/UserManagement';
-import Dashboard from './pages/Dashboards';
+import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProcurementDashboard from './pages/ProcurementDashboard';
 import FinanceDashboard from './pages/FinanceDashboard';
@@ -19,9 +19,6 @@ import ITDashboard from './pages/ITDashboard';
 import Unauthorized from './pages/Unauthorized';
 import ApprovePRPage from './pages/ApprovePRPage';
 import BudgetPage from './pages/BudgetPage';
-
-
-
 import './App.css';
 
 function App() {
@@ -31,35 +28,36 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setIsLoggedIn(true);  // User is logged in
+      setIsLoggedIn(true);
     } else {
-      setIsLoggedIn(false); // User is not logged in
-      navigate('/'); // Redirect to login if there's no token
+      setIsLoggedIn(false);
+      navigate('/');
     }
   }, [navigate]);
 
   return (
     <div className="flex">
-      {/* Show Sidebar only if logged in */}
       {isLoggedIn && <Sidebar />}
 
-      {/* Main Content */}
       <div className="flex-1 p-6">
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* Dashboards by role */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/procurement/dashboard" element={<ProcurementDashboard />} />
           <Route path="/finance/dashboard" element={<FinanceDashboard />} />
           <Route path="/management/dashboard" element={<ManagementDashboard />} />
           <Route path="/it/dashboard" element={<ITDashboard />} />
+
           <Route path="/unauthorized" element={<Unauthorized />} />
 
+          {/* Function pages */}
           <Route path="/pr" element={<PRPage />} />
           <Route path="/po" element={<POPage />} />
           <Route path="/receive" element={<ReceivePage />} />
           <Route path="/budget" element={<BudgetPage />} />
-
           <Route path="/issue" element={<IssuePage />} />
           <Route path="/asset" element={<RegisterAsset />} />
           <Route path="/payment" element={<MakePayment />} />
