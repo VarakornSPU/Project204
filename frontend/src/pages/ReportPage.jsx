@@ -62,12 +62,12 @@ export default function ReportPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="rp-container p-6">
       <h2 className="text-2xl font-bold mb-4">รายงานเอกสาร</h2>
 
       {/* เลือกประเภทเอกสาร */}
       <div className="mb-4 space-x-4">
-        <label className="font-semibold">ประเภทเอกสาร:</label>
+        <label className="font-semibold">ประเภทเอกสาร :</label>
         <select
           className="border p-2 rounded"
           value={type}
@@ -82,13 +82,13 @@ export default function ReportPage() {
 
       {/* เลือกเอกสารจาก dropdown */}
       <div className="mb-4 space-x-4">
-        <label className="font-semibold">เอกสาร:</label>
+        <label className="font-semibold">เอกสาร :</label>
         <select
           className="border p-2 rounded"
           value={docId}
           onChange={(e) => setDocId(e.target.value)}
         >
-          <option value="">-- เลือกเอกสาร --</option>
+          <option value="">เลือกเอกสาร</option>
           {documents.map((doc) => (
             <option
               key={doc.id || doc.pr_number || doc.reference_no}
