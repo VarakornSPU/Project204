@@ -32,6 +32,9 @@ const budgetRoutes = require('./routes/budget.routes');
 
 const receiptRoutes = require('./routes/receipt.routes'); // ✅ เพิ่มตรงนี้
 const invoiceRoutes = require('./routes/invoice.routes');
+const stockItemRoutes = require('./routes/stock_item.routes'); // ✅ ยังไม่ได้ include
+const issueRoutes = require('./routes/issue.routes');
+
 
 const app = express();
 
@@ -72,6 +75,10 @@ app.use('/api/it', itRoutes);
 app.use('/api/roles', roleRoutes);
 app.use("/api/budgets", budgetRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/stock-items', stockItemRoutes); // ✅ สำคัญมาก
+app.use('/api/issues', issueRoutes); // ✅ เพิ่ม route นี้ด้วย
+
+
 
 
 // ✅ Receipt Routes

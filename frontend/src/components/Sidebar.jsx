@@ -44,7 +44,7 @@ const Sidebar = () => {
               <Link to="/receive">📥 รับพัสดุ</Link>
             </li>
             <li>
-              <Link to="/asset">🏷️ ทะเบียนพัสดุ</Link>
+              <Link to="/issue">🏷️ เบิกพัสดุ</Link>
             </li>
           </>
         )}

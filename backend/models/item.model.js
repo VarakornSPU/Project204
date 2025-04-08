@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     unit: DataTypes.STRING,
     description: DataTypes.TEXT,
   }, {
-    tableName: 'Items', // แนะนำให้ใส่ชื่อตารางไว้ชัดเจน
+    tableName: 'Items', // 👈 สำคัญ! ให้ตรงกับชื่อจริงใน DB
     timestamps: true
   });
 
@@ -13,6 +13,12 @@ module.exports = (sequelize, DataTypes) => {
     Item.hasMany(models.PRDetail, {
       foreignKey: 'item_id',
       as: 'pr_details'
+    });
+
+    // 👇 เพิ่มความสัมพันธ์กับ StockItem
+    Item.hasMany(models.StockItem, {
+      foreignKey: 'item_id',
+      as: 'stock_items'
     });
   };
 
